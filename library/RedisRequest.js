@@ -8,14 +8,14 @@ import {
   toPairs,
   when
 } from "https://x.nest.land/ramda@0.27.0/source/index.js";
-import { factorizeType } from "https://deno.land/x/functional@v1.0.0/library/factories.js";
+import { factorizeType } from "https://deno.land/x/functional@v1.2.1/library/factories.js";
 import { $$rawPlaceholder } from "./Symbol.js";
 import {
   assertIsArray,
   assertIsBoolean,
   assertIsInstance,
   assertIsString
-} from "../../functional/library/utilities.js";
+} from "https://deno.land/x/functional@v1.2.1/library/utilities.js";
 
 export const RedisRequest = factorizeType("RedisRequest", [ "command", "raw", "arguments" ]);
 
@@ -35,6 +35,8 @@ export const RedisRequest = factorizeType("RedisRequest", [ "command", "raw", "a
  * ### Example
  *
  * ```js
+ * import RedisRequest from "https://deno.land/x/functional-redis@v0.1.1/library/RedisRequest.js";
+ *
  * const redisRequest = RedisRequest("GET", new Uint8Array([]), [ "hoge" ]);
  *
  * assert(RedisRequest.is(redisRequest));
@@ -44,7 +46,8 @@ export const RedisRequest = factorizeType("RedisRequest", [ "command", "raw", "a
  * In the following example, the request will resolve to: `SET hoge piyo`.
  *
  * ```js
- * import { encodeText } from "https://deno.land/x/functional@v1.1.0/library/utilities.js";
+ * import { encodeText } from "https://deno.land/x/functional@v1.2.1/library/utilities.js";
+ * import RedisRequest from "https://deno.land/x/functional-redis@v0.1.1/library/RedisRequest.js";
  * import { $$rawPlaceholder } from "https://deno.land/x/functional-redis@v0.1.0/library/Symbol.js";
  *
  * const redisRequest = RedisRequest("SET", encodeText("piyo"), [ "hoge", $$rawPlaceholder ]);
@@ -55,7 +58,8 @@ export const RedisRequest = factorizeType("RedisRequest", [ "command", "raw", "a
  * The placeholder can be used multiple times if the buffer has multiple values separated by CLRF (`\r\n`).
  *
  * ```js
- * import { encodeText } from "https://deno.land/x/functional@v1.1.0/library/utilities.js";
+ * import { encodeText } from "https://deno.land/x/functional@v1.2.1/library/utilities.js";
+ * import RedisRequest from "https://deno.land/x/functional-redis@v0.1.1/library/RedisRequest.js";
  * import { $$rawPlaceholder } from "https://deno.land/x/functional-redis@v0.1.0/library/Symbol.js";
  *
  * const redisRequest = RedisRequest(

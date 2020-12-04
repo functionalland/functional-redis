@@ -1,16 +1,16 @@
-import { assert, assertEquals } from "https://deno.land/std@0.70.0/testing/asserts.ts"
+import { assert, assertEquals } from "https://deno.land/std@0.79.0/testing/asserts.ts"
 import { compose, map, tap } from "https://x.nest.land/ramda@0.27.0/source/index.js";
 
-import Task from "https://deno.land/x/functional@v1.1.0/library/Task.js";
+import Task from "https://deno.land/x/functional@v1.2.1/library/Task.js";
 import {
   decodeRaw,
   encodeText,
   insideOut,
   log,
   safeExtract
-} from "https://deno.land/x/functional@v1.1.0/library/utilities.js";
-import Buffer from "../../functional-io/library/Buffer.js";
-import Resource from "../../functional-io/library/Resource.js";
+} from "https://deno.land/x/functional@v1.2.1/library/utilities.js";
+import Buffer from "https://deno.land/x/functional_io@v1.0.0/library/Buffer.js";
+import Resource from "https://deno.land/x/functional_io@v1.0.0/library/Resource.js";
 
 import RedisRequest from "./RedisRequest.js";
 import { $$rawPlaceholder } from "./Symbol.js";

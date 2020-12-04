@@ -1,5 +1,5 @@
-import { assertEquals } from "https://deno.land/std@0.70.0/testing/asserts.ts"
-import { encodeText } from "https://deno.land/x/functional@v1.1.0/library/utilities.js";
+import { assertEquals } from "https://deno.land/std@0.79.0/testing/asserts.ts"
+import { encodeText } from "https://deno.land/x/functional@v1.2.1/library/utilities.js";
 
 import RedisRequest from "./RedisRequest.js";
 import { $$rawPlaceholder } from "./Symbol.js";

@@ -27,19 +27,19 @@ import {
   when
 } from "https://x.nest.land/ramda@0.27.0/source/index.js";
 
-import Pair from "../../functional/library/Pair.js";
-import Task from "../../functional/library/Task.js";
-import { decodeRaw, encodeText, runSequentially } from "../../functional/library/utilities.js";
-import { factorizeBuffer } from "../../functional-io/library/Buffer.js";
-import Resource, { factorizeResource } from "../../functional-io/library/Resource.js";
-import { close, readLine, readNBytes, write } from "../../functional-io/library/fs.js";
+import Pair from "https://deno.land/x/functional@v1.2.1/library/Pair.js";
+import Task from "https://deno.land/x/functional@v1.2.1/library/Task.js";
+import { decodeRaw, encodeText, runSequentially } from "https://deno.land/x/functional@v1.2.1/library/utilities.js";
+import { factorizeBuffer } from "https://deno.land/x/functional_io@v1.0.0//library/Buffer.js";
+import Resource, { factorizeResource } from "https://deno.land/x/functional_io@v1.0.0//library/Resource.js";
+import { close, readLine, readNBytes, write } from "https://deno.land/x/functional_io@v1.0.0//library/fs.js";
 import {
   discardFirstLine,
   discardNCharacter,
   factorizeUint8Array,
   splitCLRF,
   trimCRLF
-} from "../../functional-io/library/utilities.js";
+} from "https://deno.land/x/functional_io@v1.0.0//library/utilities.js";
 import { factorizeRedisResponseFailure, factorizeRedisResponseSuccess } from "./RedisResponse.js";
 import { $$rawPlaceholder } from "./Symbol.js";
 import RedisRequest, { factorizeRedisRequest } from "./RedisRequest.js";

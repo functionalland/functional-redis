@@ -2,10 +2,10 @@
 
 A simple Redis client in tune with Functional Programming principles in JavaScript for Deno.
 
-[![deno land](http://img.shields.io/badge/available%20on-deno.land/x-lightgrey.svg?logo=deno&labelColor=black)](https://deno.land/x/functional-redis@v0.1.0)
+[![deno land](http://img.shields.io/badge/available%20on-deno.land/x-lightgrey.svg?logo=deno&labelColor=black)](https://deno.land/x/functional-redis@v0.1.1)
 [![deno version](https://img.shields.io/badge/deno-^1.5.4-lightgrey?logo=deno)](https://github.com/denoland/deno)
 [![GitHub release](https://img.shields.io/github/v/release/sebastienfilion/functional-redis)](https://github.com/sebastienfilion/functional-redis/releases)
-[![GitHub licence](https://img.shields.io/github/license/sebastienfilion/functional-redis)](https://github.com/sebastienfilion/functional-redis/blob/v0.1.0/LICENSE)
+[![GitHub licence](https://img.shields.io/github/license/sebastienfilion/functional-redis)](https://github.com/sebastienfilion/functional-redis/blob/v0.1.1/LICENSE)
 
 * [Redis Request](#redis-request)
 
@@ -19,13 +19,15 @@ The `RedisRequest` type is mostly interoperable with [`Resource`](https://github
 and [`(HTTP) Response`](https://github.com/sebastienfilion/functional-io#response).
 
 The `RedisRequest` type implements the following algebras:
-- [x] Group
-- [x] Comonad
-- [x] Monad
+  - [x] Group
+  - [x] Comonad
+  - [x] Monad
 
 ### Example
 
 ```js
+import RedisRequest from "https://deno.land/x/functional-redis@v0.1.1/library/RedisRequest.js";
+
 const redisRequest = RedisRequest("GET", new Uint8Array([]), [ "hoge" ]);
 
 assert(RedisRequest.is(redisRequest));
@@ -35,8 +37,9 @@ A Symbol named `rawPlaceholder` may be used as a placeholder for the buffer.
 In the following example, the request will resolve to: `SET hoge piyo`.
 
 ```js
-import { encodeText } from "https://deno.land/x/functional@v1.1.0/library/utilities.js";
-import { $$rawPlaceholder } from "https://deno.land/x/functional-redis@v0.1.0/library/Symbol.js";
+import { encodeText } from "https://deno.land/x/functional@v1.2.1/library/utilities.js";
+import RedisRequest from "https://deno.land/x/functional-redis@v0.1.1/library/RedisRequest.js";
+import { $$rawPlaceholder } from "https://deno.land/x/functional-redis@v0.1.1/library/Symbol.js";
 
 const redisRequest = RedisRequest("SET", encodeText("piyo"), [ "hoge", $$rawPlaceholder ]);
 
@@ -46,8 +49,9 @@ assert(RedisRequest.is(redisRequest));
 The placeholder can be used multiple times if the buffer has multiple values separated by CLRF (`\r\n`).
 
 ```js
-import { encodeText } from "https://deno.land/x/functional@v1.1.0/library/utilities.js";
-import { $$rawPlaceholder } from "https://deno.land/x/functional-redis@v0.1.0/library/Symbol.js";
+import { encodeText } from "https://deno.land/x/functional@v1.2.1/library/utilities.js";
+import RedisRequest from "https://deno.land/x/functional-redis@v0.1.1/library/RedisRequest.js";
+import { $$rawPlaceholder } from "https://deno.land/x/functional-redis@v0.1.1/library/Symbol.js";
 
 const redisRequest = RedisRequest(
   "MSET",
