@@ -2,17 +2,18 @@ import { assertEquals } from "https://deno.land/std@0.70.0/testing/asserts.ts"
 import { encodeText } from "https://deno.land/x/functional@v1.1.0/library/utilities.js";
 
 import RedisRequest from "./RedisRequest.js";
+import { $$rawPlaceholder } from "./Symbol.js";
 
 Deno.test(
   "RedisRequest.append",
   () => {
     assertEquals(
-      RedisRequest.append("HOGE", "PIYO", {}).toString(),
+      RedisRequest.append("HOGE", "PIYO").toString(),
       `RedisRequest("APPEND", , ["HOGE", "PIYO"])`
     );
 
     assertEquals(
-      RedisRequest.append("HOGE", encodeText("PIYO"), {}).toString(),
+      RedisRequest.append("HOGE", encodeText("PIYO")).toString(),
       `RedisRequest("APPEND", ${encodeText("PIYO")}, ["HOGE", Symbol(RawPlaceholder)])`
     );
   }
@@ -112,7 +113,7 @@ Deno.test(
   "RedisRequest.getrange",
   () => {
     assertEquals(
-      RedisRequest.getrange("HOGE", 0, 1).toString(),
+      RedisRequest.getrange("HOGE", [ 0, 1 ]).toString(),
       `RedisRequest("GETRANGE", , ["HOGE", "0", "1"])`
     );
   }
@@ -184,46 +185,157 @@ Deno.test(
 );
 
 Deno.test(
+  "RedisRequest.mset",
+  () => {
+    assertEquals(
+      RedisRequest.mset("HOGE", "PIYO").toString(),
+      `RedisRequest("MSET", , ["HOGE", "PIYO"])`
+    );
+
+    assertEquals(
+      RedisRequest.mset("HOGE", "PIYO", "HOGEFUGA", "FUGA").toString(),
+      `RedisRequest("MSET", , ["HOGE", "PIYO"])`
+    );
+
+    assertEquals(
+      RedisRequest.mset([ "HOGE", $$rawPlaceholder ], encodeText("PIYO")).toString(),
+      `RedisRequest("MSET", ${encodeText("PIYO")}, ["HOGE", Symbol(RawPlaceholder)])`
+    );
+
+    assertEquals(
+      RedisRequest.mset(
+        [ "HOGE", $$rawPlaceholder, "HOGEFUGA", $$rawPlaceholder ],
+        encodeText("PIYO\r\nFUGA")
+      ).toString(),
+      `RedisRequest("MSET", ${encodeText("PIYO\r\nFUGA")}, ["HOGE", Symbol(RawPlaceholder), "HOGEFUGA", Symbol(RawPlaceholder)])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.msetnx",
+  () => {
+    assertEquals(
+      RedisRequest.msetnx("HOGE", "PIYO").toString(),
+      `RedisRequest("MSETNX", , ["HOGE", "PIYO"])`
+    );
+
+    assertEquals(
+      RedisRequest.msetnx("HOGE", "PIYO", "HOGEFUGA", "FUGA").toString(),
+      `RedisRequest("MSETNX", , ["HOGE", "PIYO"])`
+    );
+
+    assertEquals(
+      RedisRequest.msetnx([ "HOGE", $$rawPlaceholder ], encodeText("PIYO")).toString(),
+      `RedisRequest("MSETNX", ${encodeText("PIYO")}, ["HOGE", Symbol(RawPlaceholder)])`
+    );
+
+    assertEquals(
+      RedisRequest.msetnx(
+        [ "HOGE", $$rawPlaceholder, "HOGEFUGA", $$rawPlaceholder ],
+        encodeText("PIYO\r\nFUGA")
+      ).toString(),
+      `RedisRequest("MSETNX", ${encodeText("PIYO\r\nFUGA")}, ["HOGE", Symbol(RawPlaceholder), "HOGEFUGA", Symbol(RawPlaceholder)])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.psetex",
+  () => {
+    assertEquals(
+      RedisRequest.psetex(1000, "HOGE", "PIYO").toString(),
+      `RedisRequest("PSETEX", , ["HOGE", "1000", "PIYO"])`
+    );
+
+    assertEquals(
+      RedisRequest.psetex(1000, "HOGE", encodeText("PIYO")).toString(),
+      `RedisRequest("PSETEX", ${encodeText("PIYO")}, ["HOGE", "1000", Symbol(RawPlaceholder)])`
+    );
+  }
+);
+
+Deno.test(
   "RedisRequest.set",
   () => {
     assertEquals(
-      RedisRequest.set("HOGE", "PIYO", {}).toString(),
+      RedisRequest.set({}, "HOGE", "PIYO").toString(),
       `RedisRequest("SET", , ["HOGE", "PIYO"])`
     );
 
     assertEquals(
-      RedisRequest.set("HOGE", encodeText("PIYO"), {}).toString(),
+      RedisRequest.set({}, "HOGE", encodeText("PIYO")).toString(),
       `RedisRequest("SET", ${encodeText("PIYO")}, ["HOGE", Symbol(RawPlaceholder)])`
     );
 
     assertEquals(
-      RedisRequest.set("HOGE", "PIYO", { EX: 2000 }).toString(),
-      `RedisRequest("SET", , ["HOGE", "PIYO", "EX", 2000])`
+      RedisRequest.set({ EX: 2000 }, "HOGE", "PIYO").toString(),
+      `RedisRequest("SET", , ["HOGE", "PIYO", "EX", "2000"])`
     );
 
     assertEquals(
-      RedisRequest.set("HOGE", "PIYO", { KEEPTTL: true }).toString(),
+      RedisRequest.set({ KEEPTTL: true }, "HOGE", "PIYO").toString(),
       `RedisRequest("SET", , ["HOGE", "PIYO", "KEEPTTL"])`
     );
   }
 );
 
 Deno.test(
-  "RedisRequest.mset",
+  "RedisRequest.setbit",
   () => {
     assertEquals(
-      RedisRequest.mset("HOGE", "PIYO", []).toString(),
-      `RedisRequest("MSET", , ["HOGE", "PIYO"])`
+      RedisRequest.setbit("HOGE", 7, 1).toString(),
+      `RedisRequest("SETBIT", , ["HOGE", "7", "1"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.setex",
+  () => {
+    assertEquals(
+      RedisRequest.setex(10, "HOGE", "PIYO").toString(),
+      `RedisRequest("SETEX", , ["HOGE", "10", "PIYO"])`
     );
 
     assertEquals(
-      RedisRequest.mset(encodeText("PIYO"), [ "HOGE" ]).toString(),
-      `RedisRequest("SET", ${encodeText("PIYO")}, ["HOGE", Symbol(RawPlaceholder)])`
+      RedisRequest.setex(10, "HOGE", encodeText("PIYO")).toString(),
+      `RedisRequest("SETEX", ${encodeText("PIYO")}, ["HOGE", "10", Symbol(RawPlaceholder)])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.setnx",
+  () => {
+    assertEquals(
+      RedisRequest.setnx("HOGE", "PIYO").toString(),
+      `RedisRequest("SETNX", , ["HOGE", "PIYO"])`
     );
 
     assertEquals(
-      RedisRequest.mset(encodeText("PIYO\r\nFUGA"), [ "HOGE", "HOGEFUGA" ]).toString(),
-      `RedisRequest("SET", ${encodeText("PIYO")}, ["HOGE", Symbol(RawPlaceholder), "HOGEFUGA", Symbol(RawPlaceholder)])`
+      RedisRequest.setnx("HOGE", encodeText("PIYO")).toString(),
+      `RedisRequest("SETNX", ${encodeText("PIYO")}, ["HOGE", Symbol(RawPlaceholder)])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.setrange",
+  () => {
+    assertEquals(
+      RedisRequest.setrange("HOGE", 2, "FU").toString(),
+      `RedisRequest("SETRANGE", , ["HOGE", "2", "FU"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.strlen",
+  () => {
+    assertEquals(
+      RedisRequest.strlen("HOGE").toString(),
+      `RedisRequest("STRLEN", , ["HOGE"])`
     );
   }
 );
