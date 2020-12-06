@@ -7,21 +7,22 @@ A simple Redis client in tune with Functional Programming principles in JavaScri
 [![GitHub release](https://img.shields.io/github/v/release/sebastienfilion/functional-redis)](https://github.com/sebastienfilion/functional-redis/releases)
 [![GitHub licence](https://img.shields.io/github/license/sebastienfilion/functional-redis)](https://github.com/sebastienfilion/functional-redis/blob/v0.1.1/LICENSE)
 
-* [Redis Request](#redis-request)
+  * [Redis Request](#redis-request)
+  * [Redis Response](#redis-response)
 
 ## Redis Request
 
 The `RedisRequest` represents a Redis request.
 It has three attributes: the first is the Redis command, the second is a typed array named "raw", the last is an
 array of arguments.
-The `RedisRequest` type is mostly interoperable with [`Resource`](https://github.com/sebastienfilion/functional-io#resource),
-[`File`](https://github.com/sebastienfilion/functional-io#file), [`(HTTP) Request`](https://github.com/sebastienfilion/functional-io#request)
+The `RedisRequest` type is mostly interoperable with `RedisResponse`, [`Resource`](https://github.com/sebastienfilion/functional-io#resource),
+[`File`](https://github.com/sebastienfilion/functional-io#file), [`(HTTP) Request`](https://github.com/sebastienfilion/functional-io#request)  
 and [`(HTTP) Response`](https://github.com/sebastienfilion/functional-io#response).
 
 The `RedisRequest` type implements the following algebras:
-  - [x] Group
-  - [x] Comonad
-  - [x] Monad
+- [x] Group
+- [x] Comonad
+- [x] Monad
 
 ### Example
 
@@ -31,7 +32,7 @@ import RedisRequest from "https://deno.land/x/functional-redis@v0.1.1/library/Re
 const redisRequest = RedisRequest("GET", new Uint8Array([]), [ "hoge" ]);
 
 assert(RedisRequest.is(redisRequest));
-```
+```  
 
 A Symbol named `rawPlaceholder` may be used as a placeholder for the buffer.
 In the following example, the request will resolve to: `SET hoge piyo`.
@@ -39,19 +40,19 @@ In the following example, the request will resolve to: `SET hoge piyo`.
 ```js
 import { encodeText } from "https://deno.land/x/functional@v1.2.1/library/utilities.js";
 import RedisRequest from "https://deno.land/x/functional-redis@v0.1.1/library/RedisRequest.js";
-import { $$rawPlaceholder } from "https://deno.land/x/functional-redis@v0.1.1/library/Symbol.js";
+import { $$rawPlaceholder } from "https://deno.land/x/functional-redis@v0.1.0/library/Symbol.js";
 
 const redisRequest = RedisRequest("SET", encodeText("piyo"), [ "hoge", $$rawPlaceholder ]);
 
 assert(RedisRequest.is(redisRequest));
-```
+```  
 
 The placeholder can be used multiple times if the buffer has multiple values separated by CLRF (`\r\n`).
 
 ```js
 import { encodeText } from "https://deno.land/x/functional@v1.2.1/library/utilities.js";
 import RedisRequest from "https://deno.land/x/functional-redis@v0.1.1/library/RedisRequest.js";
-import { $$rawPlaceholder } from "https://deno.land/x/functional-redis@v0.1.1/library/Symbol.js";
+import { $$rawPlaceholder } from "https://deno.land/x/functional-redis@v0.1.0/library/Symbol.js";
 
 const redisRequest = RedisRequest(
   "MSET",
@@ -60,105 +61,177 @@ const redisRequest = RedisRequest(
 );
 
 assert(RedisRequest.is(redisRequest));
-```
+```  
 
-#### Utilities
+### Utilities
 
 The `RedisRequest` namespace comes with methods for convenience to create an instance of `RedisRequest` with various
 commands. The methods are curried.
 
-##### `RedisRequest.append` [📕](https://redis.io/commands/append)
+#### String commands
 
-`RedisRequest ~> append :: String -> String|Uint8Array -> RedisRequest`
+**RedisRequest`.append`** [📕](https://redis.io/commands/append)
+```js
+const redisRequest = RedisRequest.append("hoge", "piyo");
+```
 
-##### `RedisRequest.bitcount` [📕](https://redis.io/commands/bitcount)
+**RedisRequest`.bitcount`** [📕](https://redis.io/commands/bitcount)  
+```js
+const redisRequest = RedisRequest.bitcount("hoge", [ 0, 1 ]);
+```
 
-`RedisRequest ~> bitcount :: String -> Number[] -> RedisRequest`
+**RedisRequest`.bitfield`** [📕](https://redis.io/commands/bitfield)  
+```js
+const redisRequest = RedisRequest.bitfield("hoge", [ "GET", "i8", 100 ]);
+```
 
-##### `RedisRequest.bitop` [📕](https://redis.io/commands/bitop)
+**RedisRequest`.bitop`** [📕](https://redis.io/commands/bitop)  
+```js
+const redisRequest = RedisRequest.bitop("AND", "hoge", [ "piyo", "fuga" ]);
+```
 
-`RedisRequest ~> bitop :: String -> String -> String[] -> RedisRequest`
+**RedisRequest`.bitpos`** [📕](https://redis.io/commands/bitpos)  
+```js
+const redisRequest = RedisRequest.bitpos("hoge", [ 0, 1 ]);
+```
 
-##### `RedisRequest.bitpos` [📕](https://redis.io/commands/bitpos)
+**RedisRequest`.decr`** [📕](https://redis.io/commands/decr)  
+```js
+const redisRequest = RedisRequest.decr("hoge");
+```
 
-`RedisRequest ~> bitpos :: String -> Number[] -> RedisRequest`
+**RedisRequest`.decrby`** [📕](https://redis.io/commands/decrby)  
+```js
+const redisRequest = RedisRequest.decrby("hoge", 3);
+```
 
-##### `RedisRequest.decr` [📕](https://redis.io/commands/decr)
+**RedisRequest`.get`** [📕](https://redis.io/commands/get)  
+```js
+const redisRequest = RedisRequest.get("hoge");
+```
 
-`RedisRequest ~> decr :: String -> RedisRequest`
+**RedisRequest`.getbit`** [📕](https://redis.io/commands/getbit)  
+```js
+const redisRequest = RedisRequest.getbit("hoge", 3);
+```
 
-##### `RedisRequest.decrby` [📕](https://redis.io/commands/decrby)
+**RedisRequest`.getrange`** [📕](https://redis.io/commands/getrange)  
+```js
+const redisRequest = RedisRequest.getrange("hoge", [ 0, 1 ]);
+```
 
-`RedisRequest ~> decrby :: String -> Number -> RedisRequest`
+**RedisRequest`.getset`** [📕](https://redis.io/commands/getset)  
+```js
+const redisRequestA = RedisRequest.getset("hoge", "piyo");
+const redisRequestB = RedisRequest.getset("hoge", encodeText("piyo"));
+```
 
-##### `RedisRequest.get` [📕](https://redis.io/commands/get)
+**RedisRequest`.incr`** [📕](https://redis.io/commands/incr)  
+```js
+const redisRequest = RedisRequest.incr("hoge");
+```
 
-`RedisRequest ~> get :: String -> RedisRequest`
+**RedisRequest`.incrby`** [📕](https://redis.io/commands/incrby)  
+```js
+const redisRequest = RedisRequest.incrby("hoge", 3);
+```
 
-##### `RedisRequest.getbit` [📕](https://redis.io/commands/getbit)
+**RedisRequest`.incrbyfloat`** [📕](https://redis.io/commands/incrbyfloat)  
+```js
+const redisRequest = RedisRequest.incrbyfloat("hoge", 0.1);
+```
 
-`RedisRequest ~> getbit :: String -> Number -> RedisRequest`
+**RedisRequest`.mget`** [📕](https://redis.io/commands/mget)
+```js
+const redisRequest = RedisRequest.mget("hoge", "piyo");
+```
 
-##### `RedisRequest.getrange` [📕](https://redis.io/commands/getrange)
+**RedisRequest`.mset`** [📕](https://redis.io/commands/mset)  
+```js
+const redisRequestA = RedisRequest.mset("hoge", "piyo", "hogefuga", "fuga");
+const redisRequestB = RedisRequest.mset(
+  [ "hoge", $$rawPlaceholder, "hogefuga", $$rawPlaceholder ],
+  encodeText("piyo\r\nfuga\r\n")
+);
+```
 
-`RedisRequest ~> getrange :: String -> Number[] -> RedisRequest`
+**RedisRequest`.msetnx`** [📕](https://redis.io/commands/msetnx)  
+```js
+const redisRequestA = RedisRequest.msetnx("hoge", "piyo", "hogefuga", "fuga");
+const redisRequestB = RedisRequest.msetnx(
+  [ "hoge", $$rawPlaceholder, "hogefuga", $$rawPlaceholder ],
+  encodeText("piyo\r\nfuga\r\n")
+);
+```
 
-##### `RedisRequest.getset` [📕](https://redis.io/commands/getset)
+**RedisRequest`.psetex`** [📕](https://redis.io/commands/psetex)  
+```js
+const redisRequestA = RedisRequest.psetex(1000, "hoge", "piyo");
+const redisRequestB = RedisRequest.psetex(1000, "hoge", encodeText("piyo"));
+```
 
-`RedisRequest ~> getset :: String -> String|Uint8Array -> RedisRequest`
+**RedisRequest`.set`** [📕](https://redis.io/commands/set)  
+```js
+const redisRequestA = RedisRequest.set({}, "hoge", "piyo");
+const redisRequestB = RedisRequest.set({}, "hoge", encodeText("piyo"));
+const redisRequestC = RedisRequest.set({ EX: 2000 }, "hoge", encodeText("piyo"));
+const redisRequestD = RedisRequest.set({ KEEPTTL: true }, "hoge", encodeText("piyo"));
+```
 
-##### `RedisRequest.incr` [📕](https://redis.io/commands/incr)
+**RedisRequest`.setbit`** [📕](https://redis.io/commands/setbit)  
+```js
+const redisRequest = RedisRequest.setbit("hoge", 7, 1);
+```
 
-`RedisRequest ~> incr :: String -> RedisRequest`
+**RedisRequest`.setex`** [📕](https://redis.io/commands/setex)  
+```js
+const redisRequestA = RedisRequest.setex(10, "hoge", "piyo");
+const redisRequestB = RedisRequest.setex(10, "hoge", encodeText("piyo"));
+```
 
-##### `RedisRequest.incrby` [📕](https://redis.io/commands/incrby)
+**RedisRequest`.setnx`** [📕](https://redis.io/commands/setnx)  
+```js
+const redisRequestA = RedisRequest.setnx("hoge", "piyo");
+const redisRequestB = RedisRequest.setnx("hoge", encodeText("piyo"));
+```
 
-`RedisRequest ~> incrby :: String -> Number -> RedisRequest`
+**RedisRequest`.setrange`** [📕](https://redis.io/commands/setrange)  
+```js
+const redisRequest = RedisRequest.setrange("hoge", 2, "FU");
+```
 
-##### `RedisRequest.incrbyfloat` [📕](https://redis.io/commands/incrbyfloat)
+**RedisRequest`.stralgo`** [📕](https://redis.io/commands/stralgo)  
+```js
+const redisRequest = RedisRequest.strlen("LCS", "KEYS, "hoge", "piyo");
+```
 
-`RedisRequest ~> incrbyfloat :: String -> Number -> RedisRequest`
+**RedisRequest`.strlen`** [📕](https://redis.io/commands/strlen)  
+```js
+const redisRequest = RedisRequest.strlen("hoge");
+```
 
-##### `RedisRequest.mget` [📕](https://redis.io/commands/mget)
+---
 
-`RedisRequest ~> mget :: (...String) -> RedisRequest`
+## Redis Response
 
-##### `RedisRequest.mset` [📕](https://redis.io/commands/mset)
+The `RedisResponse` represents a Redis response.
+It has only one argument, a typed array named "raw".
+The `RedisResponse` type is mostly interoperable with `RedisRequest`, [`Resource`](https://github.com/sebastienfilion/functional-io#resource),
+[`File`](https://github.com/sebastienfilion/functional-io#file), [`(HTTP) Request`](https://github.com/sebastienfilion/functional-io#request)
+and [`(HTTP) Response`](https://github.com/sebastienfilion/functional-io#response).
 
-`RedisRequest ~> mset :: String[] -> [Uint8Array ->] RedisRequest`
+The `RedisResponse` type implements the following algebras:
+- [x] Alternative
+- [x] Group
+- [x] Comonad
+- [x] Monad
 
-##### `RedisRequest.msetnx` [📕](https://redis.io/commands/msetnx)
+### Example
 
-`RedisRequest ~> msetnx :: String[] -> [Uint8Array ->] RedisRequest`
+```js
+import RedisResponse from "https://deno.land/x/functional-redis@v0.1.1/library/RedisResponse.js";
 
-##### `RedisRequest.psetex` [📕](https://redis.io/commands/psetex)
+const redisResponse = RedisResponse.Success(new Uint8Array([]));
 
-`RedisRequest ~> psetex :: Number -> String -> String|Uint8Array -> RedisRequest`
-
-##### `RedisRequest.set` [📕](https://redis.io/commands/set)
-
-`RedisRequest ~> set :: String -> String|Uin8Array -> RedisRequest`
-
-##### `RedisRequest.setbit` [📕](https://redis.io/commands/setbit)
-
-`RedisRequest ~> setbit :: String -> Number -> String|Uin8Array -> RedisRequest`
-
-##### `RedisRequest.setex` [📕](https://redis.io/commands/setex)
-
-`RedisRequest ~> setex :: Number -> String -> String|Uint8Array -> RedisRequest`
-
-##### `RedisRequest.setnx` [📕](https://redis.io/commands/setnx)
-
-`RedisRequest ~> setnx :: String -> String|Uint8Array -> RedisRequest`
-
-##### `RedisRequest.setrange` [📕](https://redis.io/commands/setrange)
-
-`RedisRequest ~> setrange :: String -> Number -> String|Uint8Array -> RedisRequest`
-
-##### `RedisRequest.stralgo` [📕](https://redis.io/commands/stralgo)
-
-`RedisRequest ~> stralgo :: String[] -> RedisRequest`
-
-##### `RedisRequest.strlen` [📕](https://redis.io/commands/strlen)
-
-`RedisRequest ~> strlen :: String -> RedisRequest`
+assert(RedisResponse.is(redisResponse));
+```
