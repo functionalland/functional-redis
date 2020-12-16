@@ -66,7 +66,7 @@ export const RedisRequest = factorizeType("RedisRequest", [ "command", "raw", "a
  *
  * const redisRequest = RedisRequest(
  *   "MSET",
- *   encodeText("piyo\r\nfuga"),
+ *   encodeText("piyo\r\nfuga\r\n"),
  *   [ "hoge", $$rawPlaceholder, "hogefuga", $$rawPlaceholder ]
  * );
  *
@@ -148,11 +148,24 @@ const normalizeOptions = map(normalizeValue);
 const spreadOptions = compose(normalizeOptions, filter(complement(assertIsBoolean)), flatten, toPairs);
 
 /**
+ * #### `factorizeRedisRequest`
+ * `String -> Uint8Array -> (String|Symbol)[] -> RedisRequest`
+ *
+ * This curried function takes a string for the name of the Redis command, a (optionally empty) `Uint8Array` and, an
+ * array for the arguments. The return value is an instance of `RedisRequest`.
+ */
+export const factorizeRedisRequest = curry(RedisRequest);
+
+/**
+ * ***
+ *
  * #### String commands
  */
 
 /**
- * **RedisRequest`.append`** [📕](https://redis.io/commands/append)
+ * ##### RedisRequest`.append` [📕](https://redis.io/commands/append)
+ * `String -> (String|Uint8Array) -> RedisRequest`
+ *
  * ```js
  * const redisRequest = RedisRequest.append("hoge", "piyo");
  * ```
@@ -169,7 +182,9 @@ RedisRequest.append = curry(
     )
 );
 /**
- * **RedisRequest`.bitcount`** [📕](https://redis.io/commands/bitcount)  
+ * ##### RedisRequest`.bitcount` [📕](https://redis.io/commands/bitcount)
+ * `String -> [ Number, Number ] -> RedisRequest`
+ *
  * ```js
  * const redisRequest = RedisRequest.bitcount("hoge", [ 0, 1 ]);
  * ```
@@ -178,7 +193,9 @@ RedisRequest.bitcount = curry(
   (key, range) => RedisRequest("BITCOUNT", new Uint8Array([]), [ key, ...normalizeOptions(range) ])
 );
 /**
- * **RedisRequest`.bitfield`** [📕](https://redis.io/commands/bitfield)  
+ * ##### RedisRequest`.bitfield` [📕](https://redis.io/commands/bitfield)
+ * `String -> String[] -> RedisRequest`
+ *
  * ```js
  * const redisRequest = RedisRequest.bitfield("hoge", [ "GET", "i8", 100 ]);
  * ```
@@ -187,7 +204,9 @@ RedisRequest.bitfield = curry(
   (key, subcommand) => RedisRequest("BITFIELD", new Uint8Array([]), [ key, ...normalizeOptions(subcommand) ])
 );
 /**
- * **RedisRequest`.bitop`** [📕](https://redis.io/commands/bitop)  
+ * ##### RedisRequest`.bitop` [📕](https://redis.io/commands/bitop)
+ * `String -> String -> String[] -> RedisRequest`
+ *
  * ```js
  * const redisRequest = RedisRequest.bitop("AND", "hoge", [ "piyo", "fuga" ]);
  * ```
@@ -197,7 +216,9 @@ RedisRequest.bitop = curry(
     RedisRequest("BITOP", new Uint8Array([]), [ operation, destinationKey, ...keyList ])
 );
 /**
- * **RedisRequest`.bitpos`** [📕](https://redis.io/commands/bitpos)  
+ * ##### RedisRequest`.bitpos` [📕](https://redis.io/commands/bitpos)
+ * `String -> [ Number, Number ] -> RedisRequest`
+ *
  * ```js
  * const redisRequest = RedisRequest.bitpos("hoge", [ 0, 1 ]);
  * ```
@@ -206,14 +227,18 @@ RedisRequest.bitpos = curry(
   (key, range) => RedisRequest("BITPOS", new Uint8Array([]), [ key, ...normalizeOptions(range) ])
 );
 /**
- * **RedisRequest`.decr`** [📕](https://redis.io/commands/decr)  
+ * ##### RedisRequest`.decr` [📕](https://redis.io/commands/decr)
+ * `String -> RedisRequest`
+ *
  * ```js
  * const redisRequest = RedisRequest.decr("hoge");
  * ```
  */
 RedisRequest.decr = key => RedisRequest("DECR", new Uint8Array([]), [ key ]);
 /**
- * **RedisRequest`.decrby`** [📕](https://redis.io/commands/decrby)  
+ * ##### RedisRequest`.decrby` [📕](https://redis.io/commands/decrby)
+ * `String -> Number -> RedisRequest`
+ *
  * ```js
  * const redisRequest = RedisRequest.decrby("hoge", 3);
  * ```
@@ -222,14 +247,18 @@ RedisRequest.decrby = curry(
   (key, amount) => RedisRequest("DECRBY", new Uint8Array([]), [ key, normalizeValue(amount) ])
 );
 /**
- * **RedisRequest`.get`** [📕](https://redis.io/commands/get)  
+ * ##### RedisRequest`.get` [📕](https://redis.io/commands/get)
+ * `String -> RedisRequest`
+ *
  * ```js
  * const redisRequest = RedisRequest.get("hoge");
  * ```
  */
 RedisRequest.get = key => RedisRequest("GET", new Uint8Array([]), [ key ]);
 /**
- * **RedisRequest`.getbit`** [📕](https://redis.io/commands/getbit)  
+ * ##### RedisRequest`.getbit` [📕](https://redis.io/commands/getbit)
+ * `String -> Number -> RedisRequest`
+ *
  * ```js
  * const redisRequest = RedisRequest.getbit("hoge", 3);
  * ```
@@ -238,7 +267,9 @@ RedisRequest.getbit = curry(
   (key, offset) => RedisRequest("GETBIT", new Uint8Array([]), [ key, normalizeValue(offset) ])
 );
 /**
- * **RedisRequest`.getrange`** [📕](https://redis.io/commands/getrange)  
+ * ##### RedisRequest`.getrange` [📕](https://redis.io/commands/getrange)
+ * `String -> [ Number, Number ] -> RedisRequest`
+ *
  * ```js
  * const redisRequest = RedisRequest.getrange("hoge", [ 0, 1 ]);
  * ```
@@ -248,7 +279,9 @@ RedisRequest.getrange = curry(
     RedisRequest("GETRANGE", new Uint8Array([]), [ key, ...normalizeOptions(range) ])
 );
 /**
- * **RedisRequest`.getset`** [📕](https://redis.io/commands/getset)  
+ * ##### RedisRequest`.getset` [📕](https://redis.io/commands/getset)
+ * `String -> (String|Uint8Array) -> RedisRequest`
+ *
  * ```js
  * const redisRequestA = RedisRequest.getset("hoge", "piyo");
  * const redisRequestB = RedisRequest.getset("hoge", encodeText("piyo"));
@@ -266,14 +299,18 @@ RedisRequest.getset = curry(
     )
 );
 /**
- * **RedisRequest`.incr`** [📕](https://redis.io/commands/incr)  
+ * ##### RedisRequest`.incr` [📕](https://redis.io/commands/incr)
+ * `String -> RedisRequest`
+ *
  * ```js
  * const redisRequest = RedisRequest.incr("hoge");
  * ```
  */
 RedisRequest.incr = key => RedisRequest("INCR", new Uint8Array([]), [ key ]);
 /**
- * **RedisRequest`.incrby`** [📕](https://redis.io/commands/incrby)  
+ * ##### RedisRequest`.incrby` [📕](https://redis.io/commands/incrby)
+ * `String -> Number -> RedisRequest`
+ *
  * ```js
  * const redisRequest = RedisRequest.incrby("hoge", 3);
  * ```
@@ -282,7 +319,9 @@ RedisRequest.incrby = curry(
   (key, amount) => RedisRequest("INCRBY", new Uint8Array([]), [ key, normalizeValue(amount) ])
 );
 /**
- * **RedisRequest`.incrbyfloat`** [📕](https://redis.io/commands/incrbyfloat)  
+ * ##### RedisRequest`.incrbyfloat` [📕](https://redis.io/commands/incrbyfloat)
+ * `String -> Number -> RedisRequest`
+ *
  * ```js
  * const redisRequest = RedisRequest.incrbyfloat("hoge", 0.1);
  * ```
@@ -291,14 +330,18 @@ RedisRequest.incrbyfloat = curry(
   (key, amount) => RedisRequest("INCRBYFLOAT", new Uint8Array([]), [ key, normalizeValue(amount) ])
 );
 /**
- * **RedisRequest`.mget`** [📕](https://redis.io/commands/mget)
+ * ##### RedisRequest`.mget` [📕](https://redis.io/commands/mget)
+ * `(...String) -> RedisRequest`
+ *
  * ```js
  * const redisRequest = RedisRequest.mget("hoge", "piyo");
  * ```
  */
 RedisRequest.mget = (...keys) => RedisRequest("MGET", new Uint8Array([]), keys);
 /**
- * **RedisRequest`.mset`** [📕](https://redis.io/commands/mset)  
+ * ##### RedisRequest`.mset` [📕](https://redis.io/commands/mset)
+ * `(...String) -> RedisRequest`, or `(String|Symbol)[] -> Uint8Array -> RedisRequest`
+ *
  * ```js
  * const redisRequestA = RedisRequest.mset("hoge", "piyo", "hogefuga", "fuga");
  * const redisRequestB = RedisRequest.mset(
@@ -316,7 +359,9 @@ RedisRequest.mset = curry(
     )
 );
 /**
- * **RedisRequest`.msetnx`** [📕](https://redis.io/commands/msetnx)  
+ * ##### RedisRequest`.msetnx` [📕](https://redis.io/commands/msetnx)
+ * `(...String) -> RedisRequest`, or `(String|Symbol)[] -> Uint8Array -> RedisRequest`
+ *
  * ```js
  * const redisRequestA = RedisRequest.msetnx("hoge", "piyo", "hogefuga", "fuga");
  * const redisRequestB = RedisRequest.msetnx(
@@ -334,7 +379,9 @@ RedisRequest.msetnx = curry(
     )
 );
 /**
- * **RedisRequest`.psetex`** [📕](https://redis.io/commands/psetex)  
+ * ##### RedisRequest`.psetex` [📕](https://redis.io/commands/psetex)
+ * `Number -> String -> (String|Uint8Array) -> RedisRequest`
+ *
  * ```js
  * const redisRequestA = RedisRequest.psetex(1000, "hoge", "piyo");
  * const redisRequestB = RedisRequest.psetex(1000, "hoge", encodeText("piyo"));
@@ -353,7 +400,9 @@ RedisRequest.psetex = curry(
     )
 );
 /**
- * **RedisRequest`.set`** [📕](https://redis.io/commands/set)  
+ * ##### RedisRequest`.set` [📕](https://redis.io/commands/set)
+ * `Object -> String -> (String|Uint8Array) -> RedisRequest`
+ *
  * ```js
  * const redisRequestA = RedisRequest.set({}, "hoge", "piyo");
  * const redisRequestB = RedisRequest.set({}, "hoge", encodeText("piyo"));
@@ -374,7 +423,9 @@ RedisRequest.set = curry(
     )
 );
 /**
- * **RedisRequest`.setbit`** [📕](https://redis.io/commands/setbit)  
+ * ##### RedisRequest`.setbit` [📕](https://redis.io/commands/setbit)
+ * `String -> Number -> Number -> RedisRequest`
+ *
  * ```js
  * const redisRequest = RedisRequest.setbit("hoge", 7, 1);
  * ```
@@ -384,7 +435,9 @@ RedisRequest.setbit = curry(
     RedisRequest("SETBIT", new Uint8Array([]), [ key, normalizeValue(offset), normalizeValue(value) ])
 );
 /**
- * **RedisRequest`.setex`** [📕](https://redis.io/commands/setex)  
+ * ##### RedisRequest`.setex` [📕](https://redis.io/commands/setex)
+ * `Number -> String -> (String|Uint8Array) -> RedisRequest`
+ *
  * ```js
  * const redisRequestA = RedisRequest.setex(10, "hoge", "piyo");
  * const redisRequestB = RedisRequest.setex(10, "hoge", encodeText("piyo"));
@@ -403,7 +456,9 @@ RedisRequest.setex = curry(
     )
 );
 /**
- * **RedisRequest`.setnx`** [📕](https://redis.io/commands/setnx)  
+ * ##### RedisRequest`.setnx` [📕](https://redis.io/commands/setnx)
+ * `String -> (String|Uint8Array) -> RedisRequest`
+ *
  * ```js
  * const redisRequestA = RedisRequest.setnx("hoge", "piyo");
  * const redisRequestB = RedisRequest.setnx("hoge", encodeText("piyo"));
@@ -421,7 +476,9 @@ RedisRequest.setnx = curry(
     )
 );
 /**
- * **RedisRequest`.setrange`** [📕](https://redis.io/commands/setrange)  
+ * ##### RedisRequest`.setrange` [📕](https://redis.io/commands/setrange)
+ * `String -> Number -> (String|Uint8Array) -> RedisRequest`
+ *
  * ```js
  * const redisRequest = RedisRequest.setrange("hoge", 2, "FU");
  * ```
@@ -439,7 +496,9 @@ RedisRequest.setrange = curry(
     )
 );
 /**
- * **RedisRequest`.stralgo`** [📕](https://redis.io/commands/stralgo)  
+ * ##### RedisRequest`.stralgo` [📕](https://redis.io/commands/stralgo)
+ * `(...String) -> RedisRequest`
+ *
  * ```js
  * const redisRequest = RedisRequest.strlen("LCS", "KEYS, "hoge", "piyo");
  * ```
@@ -448,13 +507,22 @@ RedisRequest.stralgo = curry(
   (...subcommands) => RedisRequest("STRALGO", new Uint8Array([]), normalizeOptions(subcommands))
 );
 /**
- * **RedisRequest`.strlen`** [📕](https://redis.io/commands/strlen)  
+ * ##### RedisRequest`.strlen` [📕](https://redis.io/commands/strlen)
+ * `String -> RedisRequest`
+ *
  * ```js
  * const redisRequest = RedisRequest.strlen("hoge");
  * ```
  */
 RedisRequest.strlen = key => RedisRequest("STRLEN", new Uint8Array([]), [ key ]);
-
-export const factorizeRedisRequest = curry(RedisRequest);
+/**
+ * ##### RedisRequest`.flushall` [📕](https://redis.io/commands/flushall)
+ * `() -> RedisRequest`
+ *
+ * ```js
+ * const redisRequest = RedisRequest.flushall();
+ * ```
+ */
+RedisRequest.flushall = () => RedisRequest("FLUSHALL", new Uint8Array([]), []);
 
 export default RedisRequest;

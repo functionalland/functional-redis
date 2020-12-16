@@ -6,7 +6,13 @@ import Task from "https://deno.land/x/functional@v1.2.1/library/Task.js";
 
 import { log, runSequentially, safeExtract } from "https://deno.land/x/functional@v1.2.1/library/utilities.js";
 
-import { connectRedisClient, disconnectRedisClient, executeRedisCommand, executeSimpleRedisCommand } from "./client.js";
+import {
+  connectRedisClient,
+  disconnectRedisClient,
+  executeRedisCommand,
+  executeRedisCommandPipeline,
+  createRedisSession
+} from "./client.js";
 import RedisRequest from "./RedisRequest.js";
 
 const repeatRedisCommandN = (redisRequest, count) => redisResource => Task.of(redisResource).chainRec(
@@ -39,6 +45,31 @@ Deno.test(
 );
 
 Deno.test(
+  "Performance: [functional-redis] with pipeline SET",
+  async () => {
+    const executePerformanceTest = compose(
+      chain(
+        converge(
+          runSequentially,
+          [
+            executeRedisCommandPipeline(
+              Array(10)
+                .fill(null)
+                .map(_ => RedisRequest("SET", new Uint8Array([]), [ "HOGE", "PIYO" ]))
+            ),
+            executeRedisCommand(RedisRequest("FLUSHALL", new Uint8Array([]), [])),
+            disconnectRedisClient
+          ]
+        )
+      ),
+      connectRedisClient
+    );
+
+    safeExtract("Failed to read the response.", await executePerformanceTest(({ port: 6379 })).run());
+  }
+);
+
+Deno.test(
   "Performance: [functional-redis] GET",
   async () => {
     const executePerformanceTest = compose(
@@ -48,6 +79,32 @@ Deno.test(
           [
             executeRedisCommand(RedisRequest("SET", new Uint8Array([]), [ "HOGE", "PIYO" ])),
             repeatRedisCommandN(RedisRequest("GET", new Uint8Array([]), [ "HOGE" ]), 10),
+            executeRedisCommand(RedisRequest("FLUSHALL", new Uint8Array([]), [])),
+            disconnectRedisClient
+          ]
+        )
+      ),
+      connectRedisClient
+    );
+
+    safeExtract("Failed to read the response.", await executePerformanceTest(({ port: 6379 })).run());
+  }
+);
+
+Deno.test(
+  "Performance: [functional-redis] with pipeline GET",
+  async () => {
+    const executePerformanceTest = compose(
+      chain(
+        converge(
+          runSequentially,
+          [
+            executeRedisCommand(RedisRequest("SET", new Uint8Array([]), [ "HOGE", "PIYO" ])),
+            executeRedisCommandPipeline(
+              Array(10)
+                .fill(null)
+                .map(_ => RedisRequest("GET", new Uint8Array([]), [ "HOGE" ]))
+            ),
             executeRedisCommand(RedisRequest("FLUSHALL", new Uint8Array([]), [])),
             disconnectRedisClient
           ]

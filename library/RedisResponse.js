@@ -1,4 +1,3 @@
-import { curry } from "https://x.nest.land/ramda@0.27.0/source/index.js";
 import { factorizeSumType } from "https://deno.land/x/functional@v1.2.1/library/factories.js";
 import { $$tag, $$type } from "https://deno.land/x/functional@v1.2.1/library/Symbols.js";
 
@@ -131,7 +130,18 @@ RedisResponse.prototype.toString = function () {
   return `${this.constructor[$$type]}.${this[$$tag]}(${this.raw})`;
 };
 
-export const factorizeRedisResponseSuccess = curry(RedisResponse.Success);
-export const factorizeRedisResponseFailure = curry(RedisResponse.Failure);
+/**
+ * ### Utilities
+ *
+ * #### `factorizeRedisResponseSuccess`
+ * `Uint8Array -> RedisResponse.Success`
+ */
+export const factorizeRedisResponseSuccess = RedisResponse.Success;
+
+/**
+ * #### `factorizeRedisResponseFailure`
+ * `Uint8Array -> RedisResponse.Failure`
+ */
+export const factorizeRedisResponseFailure = RedisResponse.Failure;
 
 export default RedisResponse;

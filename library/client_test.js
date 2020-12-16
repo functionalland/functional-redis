@@ -1,16 +1,36 @@
 import { assert, assertEquals } from "https://deno.land/std@0.79.0/testing/asserts.ts"
-import { compose, map, tap } from "https://x.nest.land/ramda@0.27.0/source/index.js";
+import {
+  __,
+  append,
+  applyTo,
+  chain,
+  compose,
+  concat,
+  converge,
+  curry,
+  flip,
+  identity,
+  lift,
+  map,
+  prop,
+  tap,
+  useWith
+} from "https://x.nest.land/ramda@0.27.0/source/index.js";
 
 import Task from "https://deno.land/x/functional@v1.2.1/library/Task.js";
 import {
+  chainLift,
   decodeRaw,
   encodeText,
   insideOut,
   log,
-  safeExtract
-} from "https://deno.land/x/functional@v1.2.1/library/utilities.js";
+  safeExtract,
+  runSequentially
+} from "../../functional/library/utilities.js";
 import Buffer from "https://deno.land/x/functional_io@v1.0.0/library/Buffer.js";
+import File from "../../functional-io/library/File.js";
 import Resource from "https://deno.land/x/functional_io@v1.0.0/library/Resource.js";
+import { readFile, writeFile } from "https://deno.land/x/functional_io@v1.0.0/library/fs.js";
 
 import RedisRequest from "./RedisRequest.js";
 import { $$rawPlaceholder } from "./Symbol.js";
@@ -20,8 +40,10 @@ import {
   disconnectRedisClient,
   encodeRedisRequest,
   executeRedisCommand,
-  executeSimpleRedisCommand,
+  executeRedisCommandPipeline,
+  createRedisSession,
   parseRedisResponse,
+  pipeRedisCommand,
   readRedisResponse,
   writeRedisRequest
 } from "./client.js";
@@ -112,7 +134,7 @@ Deno.test(
 
     assertEquals(
       encodeRedisRequest(
-        RedisRequest("MSET", encodeText("piyo\r\nfuga"), [ "hoge", $$rawPlaceholder, "hogefuga", $$rawPlaceholder ])
+        RedisRequest("MSET", encodeText("piyo\r\nfuga\r\n"), [ "hoge", $$rawPlaceholder, "hogefuga", $$rawPlaceholder ])
       ),
       encodeText("*5\r\n$4\r\nMSET\r\n$4\r\nhoge\r\n$4\r\npiyo\r\n$8\r\nhogefuga\r\n$4\r\nfuga\r\n")
     );
@@ -192,13 +214,13 @@ Deno.test(
     const redisResource = safeExtract("Failed to connect the client.", containerB);
 
     const containerC = await writeRedisRequest(
-      RedisRequest("PING", new Uint8Array([]), [ "HOGE" ]),
+      RedisRequest("PING", new Uint8Array([]), [ "hoge" ]),
       redisResource
     ).run();
 
     safeExtract("Failed to write the request.", containerC);
 
-    await assertRedisLog([ "PING", "HOGE" ]);
+    await assertRedisLog([ "PING", "hoge" ]);
 
     await writeRedisRequest(RedisRequest("FLUSHALL", new Uint8Array([]), []), redisResource).run();
 
@@ -219,7 +241,7 @@ Deno.test(
     const redisResource = safeExtract("Failed to connect the client.", containerA);
 
     await writeRedisRequest(
-      RedisRequest("SET", new Uint8Array([]), [ "HOGE", "PIYO" ]),
+      RedisRequest("SET", new Uint8Array([]), [ "hoge", "piyo" ]),
       redisResource
     ).run();
 
@@ -244,21 +266,21 @@ Deno.test(
     const redisResource = safeExtract("Failed to connect the client.", containerA);
 
     await writeRedisRequest(
-      RedisRequest("SET", new Uint8Array([]), [ "HOGE", "PIYO" ]),
+      RedisRequest("SET", new Uint8Array([]), [ "hoge", "piyo" ]),
       redisResource
     ).run();
 
     await readRedisResponse(redisResource).run();
 
     await writeRedisRequest(
-      RedisRequest("SET", new Uint8Array([]), [ "FUGA", "" ]),
+      RedisRequest("SET", new Uint8Array([]), [ "fuga", "" ]),
       redisResource
     ).run();
 
     await readRedisResponse(redisResource).run();
 
     await writeRedisRequest(
-      RedisRequest("GET", new Uint8Array([]), [ "HOGE" ]),
+      RedisRequest("GET", new Uint8Array([]), [ "hoge" ]),
       redisResource
     ).run();
 
@@ -267,11 +289,11 @@ Deno.test(
 
     assertEquals(
       redisResponseB.toString(),
-      `RedisResponse.Success(${encodeText("$4\r\nPIYO\r\n")})`
+      `RedisResponse.Success(${encodeText("$4\r\npiyo\r\n")})`
     );
 
     await writeRedisRequest(
-      RedisRequest("GET", new Uint8Array([]), [ "FUGA" ]),
+      RedisRequest("GET", new Uint8Array([]), [ "fuga" ]),
       redisResource
     ).run();
 
@@ -284,7 +306,7 @@ Deno.test(
     );
 
     await writeRedisRequest(
-      RedisRequest("GET", new Uint8Array([]), [ "PIYO" ]),
+      RedisRequest("GET", new Uint8Array([]), [ "piyo" ]),
       redisResource
     ).run();
 
@@ -309,14 +331,14 @@ Deno.test(
     const redisResource = safeExtract("Failed to connect the client.", containerA);
 
     await writeRedisRequest(
-      RedisRequest("LPUSH", new Uint8Array([]), [ "HOGE", "PIYO", "FUGA" ]),
+      RedisRequest("LPUSH", new Uint8Array([]), [ "hoge", "piyo", "fuga" ]),
       redisResource
     ).run();
 
     await readRedisResponse(redisResource).run();
 
     await writeRedisRequest(
-      RedisRequest("LRANGE", new Uint8Array([]), [ "HOGE", "0", "-1" ]),
+      RedisRequest("LRANGE", new Uint8Array([]), [ "hoge", "0", "-1" ]),
       redisResource
     ).run();
 
@@ -325,7 +347,7 @@ Deno.test(
 
     assertEquals(
       redisResponse.toString(),
-      `RedisResponse.Success(${encodeText("*2\r\n$4\r\nFUGA\r\n$4\r\nPIYO\r\n")})`
+      `RedisResponse.Success(${encodeText("*2\r\n$4\r\nfuga\r\n$4\r\npiyo\r\n")})`
     );
 
     await writeRedisRequest(RedisRequest("FLUSHALL", new Uint8Array([]), []), redisResource).run();
@@ -341,7 +363,7 @@ Deno.test(
     const redisResource = safeExtract("Failed to connect the client.", containerA);
 
     const containerB = await executeRedisCommand(
-      RedisRequest("SET", new Uint8Array([]), [ "HOGE", "PIYO" ]),
+      RedisRequest("SET", new Uint8Array([]), [ "hoge", "piyo" ]),
       redisResource
     ).run();
 
@@ -353,7 +375,7 @@ Deno.test(
     );
 
     const containerC = await executeRedisCommand(
-      RedisRequest("GET", new Uint8Array([]), [ "HOGE" ]),
+      RedisRequest("GET", new Uint8Array([]), [ "hoge" ]),
       redisResource
     ).run();
 
@@ -361,7 +383,61 @@ Deno.test(
 
     assertEquals(
       redisResponseB.toString(),
-      `RedisResponse.Success(${encodeText("$4\r\nPIYO\r\n")})`
+      `RedisResponse.Success(${encodeText("$4\r\npiyo\r\n")})`
+    );
+
+    await writeRedisRequest(RedisRequest("FLUSHALL", new Uint8Array([]), []), redisResource).run();
+
+    await disconnectRedisClient(redisResource).run();
+  }
+);
+
+const ass = curry((message, expected, actual) => assertEquals(actual, expected, message));
+
+Deno.test(
+  "createRedisSession",
+  async () => {
+    const container = await createRedisSession(
+      compose(
+        map(tap(compose(ass(`The response was not accepted.`, "OK"), decodeRedisResponse))),
+        executeRedisCommand(RedisRequest("SET", new Uint8Array([]), [ "hoge", "piyo" ]))
+      )
+    )({ port: 6379 }).run();
+
+    safeExtract("Failed to read the response.", container);
+
+    await createRedisSession(
+      executeRedisCommand(RedisRequest("FLUSHALL", new Uint8Array([]), []))
+    )({ port: 6379 }).run();
+  }
+);
+
+Deno.test(
+  "executeRedisCommandPipeline",
+  async () => {
+    const containerA = await connectRedisClient({ port: 6379 }).run();
+    const redisResource = safeExtract("Failed to connect the client.", containerA);
+
+    const containerB = await executeRedisCommandPipeline(
+      [
+        RedisRequest.set({}, "hoge", "piyo"),
+        RedisRequest.get("hoge")
+      ],
+      redisResource
+    ).run();
+
+    const redisResponseList = safeExtract("Failed to read the response.", containerB);
+
+    assert(redisResponseList.every(RedisResponse.is));
+
+    assertEquals(
+      redisResponseList[0].toString(),
+      `RedisResponse.Success(${encodeText("+OK\r\n")})`
+    );
+
+    assertEquals(
+      redisResponseList[1].toString(),
+      `RedisResponse.Success(${encodeText("$4\r\npiyo\r\n")})`
     );
 
     await writeRedisRequest(RedisRequest("FLUSHALL", new Uint8Array([]), []), redisResource).run();
@@ -371,21 +447,152 @@ Deno.test(
 );
 
 Deno.test(
-  "executeSimpleRedisCommand",
+  "pipeRedisCommand",
   async () => {
-    const container = await executeSimpleRedisCommand(
-      compose(
-        map(
-          tap(compose(log("Redis response:"), decodeRedisResponse))
-        ),
-        executeRedisCommand(RedisRequest("SET", new Uint8Array([]), [ "HOGE", "PIYO" ]))
-      )
-    )({ port: 6379 }).run();
+    const containerA = await connectRedisClient({ port: 6379 }).run();
+    const redisResource = safeExtract("Failed to connect the client.", containerA);
+
+    const containerB = await pipeRedisCommand(
+      [
+        RedisRequest.set({}, "hoge", "piyo"),
+        RedisRequest.get("hoge"),
+        RedisRequest.set({}, "fuga"),
+        RedisRequest.flushall()
+      ],
+      redisResource
+    ).run();
+
+    safeExtract("Failed to read the response.", containerB);
+
+    await writeRedisRequest(RedisRequest("FLUSHALL", new Uint8Array([]), []), redisResource).run();
+
+    await disconnectRedisClient(redisResource).run();
+  }
+);
+
+Deno.test(
+  "Scenario 1",
+  async () => {
+    const containerA = await connectRedisClient({ port: 6379 }).run();
+    const redisResource = safeExtract("Failed to connect the client.", containerA);
+
+    assert(Resource.is(redisResource));
+
+    const containerB = await executeRedisCommand(
+      RedisRequest("SET", encodeText("piyo"), [ "hoge", $$rawPlaceholder ]),
+      redisResource
+    ).run();
+    const redisResponseA = safeExtract("Failed to execute the command..", containerB);
+
+    assert(RedisResponse.is(redisResponseA));
+
+    const containerC = await executeRedisCommand(
+      RedisRequest("GET", new Uint8Array([]), [ "hoge" ]),
+      redisResource
+    ).run();
+    const redisResponseB = safeExtract("Failed to execute the command..", containerC);
+
+    assert(RedisResponse.is(redisResponseB));
+
+    assertEquals(redisResponseB.extract(), encodeText("$4\r\npiyo\r\n"));
+
+    assertEquals(decodeRedisResponse(redisResponseB), "piyo");
+
+    await executeRedisCommand(RedisRequest.flushall(), redisResource).run()
+
+    await disconnectRedisClient(redisResource).run();
+  }
+)
+
+Deno.test(
+  "Scenario 2",
+  async () => {
+    const setHoge = compose(
+      chain(
+        converge(
+          runSequentially,
+          [
+            executeRedisCommand(RedisRequest.set({}, "hoge", "piyo")),
+            executeRedisCommand(RedisRequest.flushall()),
+            disconnectRedisClient
+          ]
+        )
+      ),
+      connectRedisClient
+    );
+
+    const container = await setHoge({ port: 6379 }).run();
 
     safeExtract("Failed to read the response.", container);
+  }
+);
 
-    await executeSimpleRedisCommand(
-      executeRedisCommand(RedisRequest("FLUSHALL", new Uint8Array([]), []))
-    )({ port: 6379 }).run();
+Deno.test(
+  "Scenario 3",
+  async () => {
+    const setHoge = createRedisSession(executeRedisCommand(RedisRequest.set({}, "hoge", "piyo")));
+
+    const container = await setHoge({ port: 6379 }).run();
+
+    safeExtract("Failed to read the response.", container);
+  }
+);
+
+Deno.test(
+  "Scenario 4",
+  async () => {
+    const copyHogeToFuga = createRedisSession(
+      compose(
+        map(tap(compose(ass(`The response was not accepted.`, "OK"), decodeRedisResponse))),
+        pipeRedisCommand(
+          [
+            RedisRequest.set({}, "hoge", "piyo"),
+            RedisRequest.get("hoge"),
+            RedisRequest.set({}, "fuga"),
+            RedisRequest.flushall()
+          ]
+        )
+      )
+    );
+
+    const container = await copyHogeToFuga({ port: 6379 }).run();
+
+    safeExtract("Failed to read the response.", container);
+  }
+);
+
+Deno.test(
+  "Scenario 5",
+  async () => {
+    const setHoge = createRedisSession(executeRedisCommand(RedisRequest.set({}, "hoge", "piyo")));
+
+    const containerA = await setHoge({ port: 6379 }).run();
+
+    safeExtract("Failed to read the response.", containerA);
+
+    const writeHogeToFile = createRedisSession(
+      compose(
+        chain(
+          compose(
+            writeFile({}),
+            concat(File.fromPath(`${Deno.cwd()}/hoge`)),
+            parseRedisResponse
+          )
+        ),
+        executeRedisCommand(RedisRequest.get("hoge"))
+      )
+    );
+
+    const containerB = await writeHogeToFile({ port: 6379 }).run();
+
+    safeExtract("Failed to read the response.", containerB);
+
+    const flushAll = await createRedisSession(executeRedisCommand(RedisRequest.flushall()));
+
+    const containerC = await flushAll({ port: 6379 }).run();
+
+    safeExtract("Failed to read the response.", containerC);
+
+    await Deno.remove(`${Deno.cwd()}/hoge`);
   }
 );
