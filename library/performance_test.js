@@ -1,10 +1,10 @@
-import { chain, compose, converge, curry, map, reduce } from "https://x.nest.land/ramda@0.27.0/source/index.js";
+import { chain, compose, converge, curry, map, reduce } from "https://deno.land/x/ramda@v0.27.2/mod.ts";
 import { connect } from "https://deno.land/x/redis/mod.ts";
 
-import Pair from "https://deno.land/x/functional@v1.2.1/library/Pair.js";
-import Task from "https://deno.land/x/functional@v1.2.1/library/Task.js";
+import Pair from "https://deno.land/x/functional@v1.3.2/library/Pair.js";
+import Task from "https://deno.land/x/functional@v1.3.2/library/Task.js";
 
-import { log, runSequentially, safeExtract } from "https://deno.land/x/functional@v1.2.1/library/utilities.js";
+import { log, runSequentially, safeExtract } from "https://deno.land/x/functional@v1.3.2/library/utilities.js";
 
 import {
   connectRedisClient,

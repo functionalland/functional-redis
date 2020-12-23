@@ -1,11 +1,12 @@
-# Functional Redis
+<img src="./.github/fl-logo.svg" alt="Functional Redis" width="450" />
 
 A simple Redis client in tune with Functional Programming principles in JavaScript for Deno.
 
-[![deno land](http://img.shields.io/badge/available%20on-deno.land/x-lightgrey.svg?logo=deno&labelColor=black)](https://deno.land/x/functional-redis@v0.1.1)
-[![deno version](https://img.shields.io/badge/deno-^1.5.4-lightgrey?logo=deno)](https://github.com/denoland/deno)
+[![deno land](http://img.shields.io/badge/available%20on-deno.land/x-lightgrey.svg?logo=deno&labelColor=black)](https://deno.land/x/functional_redis@v0.1.2)
+[![deno version](https://img.shields.io/badge/deno-^1.6.1-lightgrey?logo=deno)](https://github.com/denoland/deno)
 [![GitHub release](https://img.shields.io/github/v/release/sebastienfilion/functional-redis)](https://github.com/sebastienfilion/functional-redis/releases)
-[![GitHub licence](https://img.shields.io/github/license/sebastienfilion/functional-redis)](https://github.com/sebastienfilion/functional-redis/blob/v0.1.1/LICENSE)
+[![GitHub licence](https://img.shields.io/github/license/sebastienfilion/functional-redis)](https://github.com/sebastienfilion/functional-redis/blob/v0.1.2/LICENSE)
+[![Discord Chat](https://img.shields.io/discord/790708610023555093.svg)](https://discord.gg/)
 
   * [Redis Request](#redis-request)
   * [Redis Response](#redis-response)
@@ -17,14 +18,14 @@ Functional Redis is optimized to write elegant and powerful point-free functions
 This example uses the Ramda library - for simplification - but you should be able to use any library that implements the Fantasy-land specifications.
 
 ```js
-import { safeExtract } from "https://deno.land/x/functional@v1.2.1/library/utilities.js";
-import File from "https://deno.land/x/functional_io@v1.0.0/library/File.js";
-import { writeFile } from "https://deno.land/x/functional_io@v1.0.0/library/fs.js";
-import RedisRequest from "https://deno.land/x/functional_redis@v0.2.0/library/RedisRequest.js";
+import { safeExtract } from "https://deno.land/x/functional@v1.3.2/library/utilities.js";
+import File from "https://deno.land/x/functional_io@v1.1.0/library/File.js";
+import { writeFile } from "https://deno.land/x/functional_io@v1.1.0/library/fs.js";
+import RedisRequest from "https://deno.land/x/functional_redis@v0.1.2/library/RedisRequest.js";
 import {
   createRedisSession,
   pipeRedisCommand
-} from "https://deno.land/x/functional_redis@v0.2.0/library/client.js";
+} from "https://deno.land/x/functional_redis@v0.1.2/library/client.js";
 
 const copyHogeToFuga = createRedisSession(
   compose(
@@ -81,7 +82,7 @@ A Symbol named `rawPlaceholder` may be used as a placeholder for the buffer.
 In the following example, the request will resolve to: `SET hoge piyo`.
 
 ```js
-import { encodeText } from "https://deno.land/x/functional@v1.2.1/library/utilities.js";
+import { encodeText } from "https://deno.land/x/functional@v1.3.2/library/utilities.js";
 import RedisRequest from "https://deno.land/x/functional-redis@v0.1.1/library/RedisRequest.js";
 import { $$rawPlaceholder } from "https://deno.land/x/functional-redis@v0.1.0/library/Symbol.js";
 
@@ -93,7 +94,7 @@ assert(RedisRequest.is(redisRequest));
 The placeholder can be used multiple times if the buffer has multiple values separated by CLRF (`\r\n`).
 
 ```js
-import { encodeText } from "https://deno.land/x/functional@v1.2.1/library/utilities.js";
+import { encodeText } from "https://deno.land/x/functional@v1.3.2/library/utilities.js";
 import RedisRequest from "https://deno.land/x/functional-redis@v0.1.1/library/RedisRequest.js";
 import { $$rawPlaceholder } from "https://deno.land/x/functional-redis@v0.1.0/library/Symbol.js";
 
@@ -324,9 +325,11 @@ const redisRequest = RedisRequest.flushall();
 
 The `RedisResponse` represents a Redis response.
 It has only one argument, a typed array named "raw".
-The `RedisResponse` type is mostly interoperable with `RedisRequest`, [`Resource`](https://github.com/sebastienfilion/functional-io#resource),
-[`File`](https://github.com/sebastienfilion/functional-io#file), [`(HTTP) Request`](https://github.com/sebastienfilion/functional-io#request)
-and [`(HTTP) Response`](https://github.com/sebastienfilion/functional-io#response).
+The `RedisResponse` type is mostly interoperable with `RedisRequest`, 
+[`Resource`](https://github.com/sebastienfilion/functional-io#resource),
+[`File`](https://github.com/sebastienfilion/functional-io#file), 
+[`(HTTP) Request`](https://github.com/sebastienfilion/functional-io#request)
+and, [`(HTTP) Response`](https://github.com/sebastienfilion/functional-io#response).
 
 The `RedisResponse` type implements the following algebras:
 - [x] Alternative
@@ -380,7 +383,7 @@ This function takes an object for the connection options and, return a
 [`Task`](https://github.com/sebastienfilion/functional#task-type) of a `Resource`.
 
 ```js
-import { connectRedisClient } from "https://deno.land/x/functional_redis@v0.2.0/library/client.js";
+import { connectRedisClient } from "https://deno.land/x/functional_redis@v0.1.2/library/client.js";
 
 const container = await connectRedisClient({ port: 6379 }).run();
 const redisResource = safeExtract("Failed to connect the client.", container);
@@ -393,7 +396,7 @@ This function takes a Resource and, return a
 [`Task`](https://github.com/sebastienfilion/functional#task-type) of a `Resource`.
 
 ```js
-import { disconnectRedisClient } from "https://deno.land/x/functional_redis@v0.2.0/library/client.js";
+import { disconnectRedisClient } from "https://deno.land/x/functional_redis@v0.1.2/library/client.js";
 
 await disconnectRedisClient(redisResource).run();
 ```
@@ -405,10 +408,10 @@ This curried function accepts a `RedisRequest` and a `Resource` that represents 
 and, returns a [`Task`](https://github.com/sebastienfilion/functional#task-type) of a `RedisResponse`.
 
 ```js
-import { safeExtract } from "https://deno.land/x/functional@v1.2.1/library/utilities.js";
-import { executeRedisCommand } from "https://deno.land/x/functional_redis@v0.2.0/library/client.js";
-import RedisRequest from "https://deno.land/x/functional_redis@v0.2.0/library/RedisRequest.js";
-import RedisResponse from "https://deno.land/x/functional_redis@v0.2.0/library/RedisResponse.js";
+import { safeExtract } from "https://deno.land/x/functional@v1.3.2/library/utilities.js";
+import { executeRedisCommand } from "https://deno.land/x/functional_redis@v0.1.2/library/client.js";
+import RedisRequest from "https://deno.land/x/functional_redis@v0.1.2/library/RedisRequest.js";
+import RedisResponse from "https://deno.land/x/functional_redis@v0.1.2/library/RedisResponse.js";
 
 const container = await executeRedisCommand(
   RedisRequest.set({}, "hoge", "piyo"),
@@ -429,10 +432,10 @@ server. The function returns a [`Task`](https://github.com/sebastienfilion/funct
 [ability of a Redis server](https://redis.io/topics/pipelining) to parse multiple request at a time.*
 
 ```js
-import { safeExtract } from "https://deno.land/x/functional@v1.2.1/library/utilities.js";
-import { executeRedisCommandPipeline } from "https://deno.land/x/functional_redis@v0.2.0/library/client.js";
-import RedisRequest from "https://deno.land/x/functional_redis@v0.2.0/library/RedisRequest.js";
-import RedisResponse from "https://deno.land/x/functional_redis@v0.2.0/library/RedisResponse.js";
+import { safeExtract } from "https://deno.land/x/functional@v1.3.2/library/utilities.js";
+import { executeRedisCommandPipeline } from "https://deno.land/x/functional_redis@v0.1.2/library/client.js";
+import RedisRequest from "https://deno.land/x/functional_redis@v0.1.2/library/RedisRequest.js";
+import RedisResponse from "https://deno.land/x/functional_redis@v0.1.2/library/RedisResponse.js";
 
 const container = await executeRedisCommandPipeline(
   [
@@ -466,14 +469,14 @@ The function resolves to a `Task` of the `Resource`; if you need to access the `
 should compose with the handler.
 
 ```js
-import { safeExtract } from "https://deno.land/x/functional@v1.2.1/library/utilities.js";
-import File from "https://deno.land/x/functional_io@v1.0.0/library/File.js";
-import { writeFile } from "https://deno.land/x/functional_io@v1.0.0/library/fs.js";
+import { safeExtract } from "https://deno.land/x/functional@v1.3.2/library/utilities.js";
+import File from "https://deno.land/x/functional_io@v1.1.0/library/File.js";
+import { writeFile } from "https://deno.land/x/functional_io@v1.1.0/library/fs.js";
 import {
   createRedisSession,
   executeRedisCommand
-} from "https://deno.land/x/functional_redis@v0.2.0/library/client.js";
-import RedisRequest from "https://deno.land/x/functional_redis@v0.2.0/library/RedisRequest.js";
+} from "https://deno.land/x/functional_redis@v0.1.2/library/client.js";
+import RedisRequest from "https://deno.land/x/functional_redis@v0.1.2/library/RedisRequest.js";
 
 const writeHogeToFile = createRedisSession(
   compose(
@@ -504,12 +507,12 @@ This function will execute all Redis requests sequentially and optionally pipe t
 request.
 
 ```js
-import { safeExtract } from "https://deno.land/x/functional@v1.2.1/library/utilities.js";
+import { safeExtract } from "https://deno.land/x/functional@v1.3.2/library/utilities.js";
 import {
   createRedisSession,
   pipeRedisCommand
-} from "https://deno.land/x/functional_redis@v0.2.0/library/client.js";
-import RedisRequest from "https://deno.land/x/functional_redis@v0.2.0/library/RedisRequest.js";
+} from "https://deno.land/x/functional_redis@v0.1.2/library/client.js";
+import RedisRequest from "https://deno.land/x/functional_redis@v0.1.2/library/RedisRequest.js";
 
 const copyHogeToFuga = createRedisSession(
   compose(
@@ -533,12 +536,25 @@ safeExtract("Failed to read the response.", container);
 
 ---
 
+## Contributing
+
+We appreciate your help! Please, [read the guidelines](./CONTRIBUTING.md).
+
 ## License
+
+MIT License
 
 Copyright © 2020 - Sebastien Filion
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

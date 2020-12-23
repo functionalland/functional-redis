@@ -15,9 +15,9 @@ import {
   prop,
   tap,
   useWith
-} from "https://x.nest.land/ramda@0.27.0/source/index.js";
+} from "https://deno.land/x/ramda@v0.27.2/mod.ts";
 
-import Task from "https://deno.land/x/functional@v1.2.1/library/Task.js";
+import Task from "https://deno.land/x/functional@v1.3.2/library/Task.js";
 import {
   chainLift,
   decodeRaw,
@@ -27,10 +27,10 @@ import {
   safeExtract,
   runSequentially
 } from "../../functional/library/utilities.js";
-import Buffer from "https://deno.land/x/functional_io@v1.0.0/library/Buffer.js";
+import Buffer from "https://deno.land/x/functional_io@v1.1.0/library/Buffer.js";
 import File from "../../functional-io/library/File.js";
-import Resource from "https://deno.land/x/functional_io@v1.0.0/library/Resource.js";
-import { readFile, writeFile } from "https://deno.land/x/functional_io@v1.0.0/library/fs.js";
+import Resource from "https://deno.land/x/functional_io@v1.1.0/library/Resource.js";
+import { readFile, writeFile } from "https://deno.land/x/functional_io@v1.1.0/library/fs.js";
 
 import RedisRequest from "./RedisRequest.js";
 import { $$rawPlaceholder } from "./Symbol.js";

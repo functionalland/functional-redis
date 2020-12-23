@@ -7,15 +7,15 @@ import {
   map,
   toPairs,
   when
-} from "https://x.nest.land/ramda@0.27.0/source/index.js";
-import { factorizeType } from "https://deno.land/x/functional@v1.2.1/library/factories.js";
+} from "https://deno.land/x/ramda@v0.27.2/mod.ts";
+import { factorizeType } from "https://deno.land/x/functional@v1.3.2/library/factories.js";
 import { $$rawPlaceholder } from "./Symbol.js";
 import {
   assertIsArray,
   assertIsBoolean,
   assertIsInstance,
   assertIsString
-} from "https://deno.land/x/functional@v1.2.1/library/utilities.js";
+} from "https://deno.land/x/functional@v1.3.2/library/utilities.js";
 
 export const RedisRequest = factorizeType("RedisRequest", [ "command", "raw", "arguments" ]);
 
@@ -48,7 +48,7 @@ export const RedisRequest = factorizeType("RedisRequest", [ "command", "raw", "a
  * In the following example, the request will resolve to: `SET hoge piyo`.
  *
  * ```js
- * import { encodeText } from "https://deno.land/x/functional@v1.2.1/library/utilities.js";
+ * import { encodeText } from "https://deno.land/x/functional@v1.3.2/library/utilities.js";
  * import RedisRequest from "https://deno.land/x/functional-redis@v0.1.1/library/RedisRequest.js";
  * import { $$rawPlaceholder } from "https://deno.land/x/functional-redis@v0.1.0/library/Symbol.js";
  *
@@ -60,7 +60,7 @@ export const RedisRequest = factorizeType("RedisRequest", [ "command", "raw", "a
  * The placeholder can be used multiple times if the buffer has multiple values separated by CLRF (`\r\n`).
  *
  * ```js
- * import { encodeText } from "https://deno.land/x/functional@v1.2.1/library/utilities.js";
+ * import { encodeText } from "https://deno.land/x/functional@v1.3.2/library/utilities.js";
  * import RedisRequest from "https://deno.land/x/functional-redis@v0.1.1/library/RedisRequest.js";
  * import { $$rawPlaceholder } from "https://deno.land/x/functional-redis@v0.1.0/library/Symbol.js";
  *

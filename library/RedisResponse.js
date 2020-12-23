@@ -1,5 +1,5 @@
-import { factorizeSumType } from "https://deno.land/x/functional@v1.2.1/library/factories.js";
-import { $$tag, $$type } from "https://deno.land/x/functional@v1.2.1/library/Symbols.js";
+import { factorizeSumType } from "https://deno.land/x/functional@v1.3.2/library/factories.js";
+import { $$tag, $$type } from "https://deno.land/x/functional@v1.3.2/library/Symbols.js";
 
 /**
  * ## Redis Response
