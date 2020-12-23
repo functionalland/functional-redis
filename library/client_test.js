@@ -26,9 +26,9 @@ import {
   log,
   safeExtract,
   runSequentially
-} from "../../functional/library/utilities.js";
+} from "https://deno.land/x/functional@v1.3.2/library/utilities.js";
 import Buffer from "https://deno.land/x/functional_io@v1.1.0/library/Buffer.js";
-import File from "../../functional-io/library/File.js";
+import File from "https://deno.land/x/functional_io@v1.1.0/library/File.js";
 import Resource from "https://deno.land/x/functional_io@v1.1.0/library/Resource.js";
 import { readFile, writeFile } from "https://deno.land/x/functional_io@v1.1.0/library/fs.js";
 
