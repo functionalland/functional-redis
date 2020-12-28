@@ -45,7 +45,7 @@ import {
   parseRedisResponse,
   pipeRedisCommand,
   readRedisResponse,
-  writeRedisRequest
+  writeRedisRequest, executeRedisCommandWithSession
 } from "./client.js";
 import RedisResponse from "./RedisResponse.js";
 
@@ -403,6 +403,22 @@ Deno.test(
         executeRedisCommand(RedisRequest("SET", new Uint8Array([]), [ "hoge", "piyo" ]))
       )
     )({ port: 6379 }).run();
+
+    safeExtract("Failed to read the response.", container);
+
+    await createRedisSession(
+      executeRedisCommand(RedisRequest("FLUSHALL", new Uint8Array([]), []))
+    )({ port: 6379 }).run();
+  }
+);
+
+Deno.test(
+  "executeRedisCommandWithSession",
+  async () => {
+    const container = await executeRedisCommandWithSession(
+      { port: 6379 },
+      RedisRequest("SET", new Uint8Array([]), [ "hoge", "piyo" ])
+    ).run();
 
     safeExtract("Failed to read the response.", container);
 

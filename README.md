@@ -2,10 +2,10 @@
 
 A simple Redis client in tune with Functional Programming principles in JavaScript for Deno.
 
-[![deno land](http://img.shields.io/badge/available%20on-deno.land/x-lightgrey.svg?logo=deno&labelColor=black)](https://deno.land/x/functional_redis@v0.1.3)
+[![deno land](http://img.shields.io/badge/available%20on-deno.land/x-lightgrey.svg?logo=deno&labelColor=black)](https://deno.land/x/functional_redis@v0.2.0)
 [![deno version](https://img.shields.io/badge/deno-^1.6.1-lightgrey?logo=deno)](https://github.com/denoland/deno)
 [![GitHub release](https://img.shields.io/github/v/release/sebastienfilion/functional-redis)](https://github.com/sebastienfilion/functional-redis/releases)
-[![GitHub licence](https://img.shields.io/github/license/sebastienfilion/functional-redis)](https://github.com/sebastienfilion/functional-redis/blob/v0.1.2/LICENSE)
+[![GitHub licence](https://img.shields.io/github/license/sebastienfilion/functional-redis)](https://github.com/sebastienfilion/functional-redis/blob/v0.2.0/LICENSE)
 [![Discord Chat](https://img.shields.io/discord/790708610023555093.svg)](https://discord.gg/)
 
   * [Redis Request](#redis-request)
@@ -21,11 +21,11 @@ This example uses the Ramda library - for simplification - but you should be abl
 import { safeExtract } from "https://deno.land/x/functional@v1.3.2/library/utilities.js";
 import File from "https://deno.land/x/functional_io@v1.1.0/library/File.js";
 import { writeFile } from "https://deno.land/x/functional_io@v1.1.0/library/fs.js";
-import RedisRequest from "https://deno.land/x/functional_redis@v0.1.3/library/RedisRequest.js";
+import RedisRequest from "https://deno.land/x/functional_redis@v0.2.0/library/RedisRequest.js";
 import {
   createRedisSession,
   pipeRedisCommand
-} from "https://deno.land/x/functional_redis@v0.1.3/library/client.js";
+} from "https://deno.land/x/functional_redis@v0.2.0/library/client.js";
 
 const copyHogeToFuga = createRedisSession(
   compose(
@@ -325,11 +325,9 @@ const redisRequest = RedisRequest.flushall();
 
 The `RedisResponse` represents a Redis response.
 It has only one argument, a typed array named "raw".
-The `RedisResponse` type is mostly interoperable with `RedisRequest`, 
-[`Resource`](https://github.com/sebastienfilion/functional-io#resource),
-[`File`](https://github.com/sebastienfilion/functional-io#file), 
-[`(HTTP) Request`](https://github.com/sebastienfilion/functional-io#request)
-and, [`(HTTP) Response`](https://github.com/sebastienfilion/functional-io#response).
+The `RedisResponse` type is mostly interoperable with `RedisRequest`, [`Resource`](https://github.com/sebastienfilion/functional-io#resource),
+[`File`](https://github.com/sebastienfilion/functional-io#file), [`(HTTP) Request`](https://github.com/sebastienfilion/functional-io#request)
+and [`(HTTP) Response`](https://github.com/sebastienfilion/functional-io#response).
 
 The `RedisResponse` type implements the following algebras:
 - [x] Alternative
@@ -383,7 +381,7 @@ This function takes an object for the connection options and, return a
 [`Task`](https://github.com/sebastienfilion/functional#task-type) of a `Resource`.
 
 ```js
-import { connectRedisClient } from "https://deno.land/x/functional_redis@v0.1.3/library/client.js";
+import { connectRedisClient } from "https://deno.land/x/functional_redis@v0.2.0/library/client.js";
 
 const container = await connectRedisClient({ port: 6379 }).run();
 const redisResource = safeExtract("Failed to connect the client.", container);
@@ -396,7 +394,7 @@ This function takes a Resource and, return a
 [`Task`](https://github.com/sebastienfilion/functional#task-type) of a `Resource`.
 
 ```js
-import { disconnectRedisClient } from "https://deno.land/x/functional_redis@v0.1.3/library/client.js";
+import { disconnectRedisClient } from "https://deno.land/x/functional_redis@v0.2.0/library/client.js";
 
 await disconnectRedisClient(redisResource).run();
 ```
@@ -409,9 +407,9 @@ and, returns a [`Task`](https://github.com/sebastienfilion/functional#task-type)
 
 ```js
 import { safeExtract } from "https://deno.land/x/functional@v1.3.2/library/utilities.js";
-import { executeRedisCommand } from "https://deno.land/x/functional_redis@v0.1.3/library/client.js";
-import RedisRequest from "https://deno.land/x/functional_redis@v0.1.3/library/RedisRequest.js";
-import RedisResponse from "https://deno.land/x/functional_redis@v0.1.3/library/RedisResponse.js";
+import { executeRedisCommand } from "https://deno.land/x/functional_redis@v0.2.0/library/client.js";
+import RedisRequest from "https://deno.land/x/functional_redis@v0.2.0/library/RedisRequest.js";
+import RedisResponse from "https://deno.land/x/functional_redis@v0.2.0/library/RedisResponse.js";
 
 const container = await executeRedisCommand(
   RedisRequest.set({}, "hoge", "piyo"),
@@ -433,9 +431,9 @@ server. The function returns a [`Task`](https://github.com/sebastienfilion/funct
 
 ```js
 import { safeExtract } from "https://deno.land/x/functional@v1.3.2/library/utilities.js";
-import { executeRedisCommandPipeline } from "https://deno.land/x/functional_redis@v0.1.3/library/client.js";
-import RedisRequest from "https://deno.land/x/functional_redis@v0.1.3/library/RedisRequest.js";
-import RedisResponse from "https://deno.land/x/functional_redis@v0.1.3/library/RedisResponse.js";
+import { executeRedisCommandPipeline } from "https://deno.land/x/functional_redis@v0.2.0/library/client.js";
+import RedisRequest from "https://deno.land/x/functional_redis@v0.2.0/library/RedisRequest.js";
+import RedisResponse from "https://deno.land/x/functional_redis@v0.2.0/library/RedisResponse.js";
 
 const container = await executeRedisCommandPipeline(
   [
@@ -475,8 +473,8 @@ import { writeFile } from "https://deno.land/x/functional_io@v1.1.0/library/fs.j
 import {
   createRedisSession,
   executeRedisCommand
-} from "https://deno.land/x/functional_redis@v0.1.3/library/client.js";
-import RedisRequest from "https://deno.land/x/functional_redis@v0.1.3/library/RedisRequest.js";
+} from "https://deno.land/x/functional_redis@v0.2.0/library/client.js";
+import RedisRequest from "https://deno.land/x/functional_redis@v0.2.0/library/RedisRequest.js";
 
 const writeHogeToFile = createRedisSession(
   compose(
@@ -496,6 +494,27 @@ const containerB = await writeHogeToFile({ port: 6379 }).run();
 safeExtract("Failed to read the response.", containerB);
 ```
 
+### `executeRedisCommandWithSession`
+`Object → RedisRequest → Task RedisResponse`
+
+This curried function accepts an object for the options of the connection and, a `RedisRequest`. The return value is
+a [`Task`](https://github.com/sebastienfilion/functional#task-type) of a `RedisResponse`.
+
+This is a convenience function that composes `createRedisSession` and `executeRedisCommand`
+
+```js
+import { safeExtract } from "https://deno.land/x/functional@v1.3.2/library/utilities.js";
+import { executeRedisCommandWithSession } from "https://deno.land/x/functional_redis@v0.2.0/library/client.js";
+import RedisRequest from "https://deno.land/x/functional_redis@v0.2.0/library/RedisRequest.js";
+
+const container = await executeRedisCommandWithSession(
+  { port: 6379 },
+  RedisRequest("SET", new Uint8Array([]), [ "hoge", "piyo" ])
+).run();
+
+safeExtract("Failed to read the response.", container);
+````
+
 ### `pipeRedisCommand`
 `(RedisRequest|(* → RedisRequest))[] → Resource → Task RedisResponse`
 
@@ -511,8 +530,8 @@ import { safeExtract } from "https://deno.land/x/functional@v1.3.2/library/utili
 import {
   createRedisSession,
   pipeRedisCommand
-} from "https://deno.land/x/functional_redis@v0.1.3/library/client.js";
-import RedisRequest from "https://deno.land/x/functional_redis@v0.1.3/library/RedisRequest.js";
+} from "https://deno.land/x/functional_redis@v0.2.0/library/client.js";
+import RedisRequest from "https://deno.land/x/functional_redis@v0.2.0/library/RedisRequest.js";
 
 const copyHogeToFuga = createRedisSession(
   compose(
