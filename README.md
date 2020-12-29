@@ -2,10 +2,10 @@
 
 A simple Redis client in tune with Functional Programming principles in JavaScript for Deno.
 
-[![deno land](http://img.shields.io/badge/available%20on-deno.land/x-lightgrey.svg?logo=deno&labelColor=black)](https://deno.land/x/functional_redis@v0.2.0)
+[![deno land](http://img.shields.io/badge/available%20on-deno.land/x-lightgrey.svg?logo=deno&labelColor=black)](https://deno.land/x/functional_redis@v0.3.0)
 [![deno version](https://img.shields.io/badge/deno-^1.6.1-lightgrey?logo=deno)](https://github.com/denoland/deno)
 [![GitHub release](https://img.shields.io/github/v/release/sebastienfilion/functional-redis)](https://github.com/sebastienfilion/functional-redis/releases)
-[![GitHub licence](https://img.shields.io/github/license/sebastienfilion/functional-redis)](https://github.com/sebastienfilion/functional-redis/blob/v0.2.0/LICENSE)
+[![GitHub licence](https://img.shields.io/github/license/sebastienfilion/functional-redis)](https://github.com/sebastienfilion/functional-redis/blob/v0.3.0/LICENSE)
 [![Discord Chat](https://img.shields.io/discord/790708610023555093.svg)](https://discord.gg/)
 
   * [Redis Request](#redis-request)
@@ -222,14 +222,15 @@ const redisRequest = RedisRequest.incrbyfloat("hoge", 0.1);
 ```
 
 ##### RedisRequest`.mget` [📕](https://redis.io/commands/mget)
-`(...String) → RedisRequest`
+`(String, ...) → RedisRequest`, or `String[] → RedisRequest`
 
 ```js
-const redisRequest = RedisRequest.mget("hoge", "piyo");
+const redisRequestA = RedisRequest.mget("hoge", "piyo");
+const redisRequestB = RedisRequest.mget([ "hoge", "piyo" ]);
 ```
 
 ##### RedisRequest`.mset` [📕](https://redis.io/commands/mset)
-`(...String) → RedisRequest`, or `(String|Symbol)[] → Uint8Array → RedisRequest`
+`(String, ...) → RedisRequest`, or `(String|Symbol)[] → Uint8Array → RedisRequest`
 
 ```js
 const redisRequestA = RedisRequest.mset("hoge", "piyo", "hogefuga", "fuga");
@@ -240,7 +241,7 @@ const redisRequestB = RedisRequest.mset(
 ```
 
 ##### RedisRequest`.msetnx` [📕](https://redis.io/commands/msetnx)
-`(...String) → RedisRequest`, or `(String|Symbol)[] → Uint8Array → RedisRequest`
+`(String, ...) → RedisRequest`, or `(String|Symbol)[] → Uint8Array → RedisRequest`
 
 ```js
 const redisRequestA = RedisRequest.msetnx("hoge", "piyo", "hogefuga", "fuga");
@@ -299,7 +300,7 @@ const redisRequest = RedisRequest.setrange("hoge", 2, "FU");
 ```
 
 ##### RedisRequest`.stralgo` [📕](https://redis.io/commands/stralgo)
-`(...String) → RedisRequest`
+`(String, ...) → RedisRequest`
 
 ```js
 const redisRequest = RedisRequest.strlen("LCS", "KEYS, "hoge", "piyo");
@@ -311,6 +312,363 @@ const redisRequest = RedisRequest.strlen("LCS", "KEYS, "hoge", "piyo");
 ```js
 const redisRequest = RedisRequest.strlen("hoge");
 ```
+
+***
+
+#### Key commands
+
+##### RedisRequest`.copy` [📕](https://redis.io/commands/copy)
+`Object → String → String → RedisRequest`
+
+```js
+const redisRequestA = RedisRequest.copy({}, "hoge", "fuga");
+const redisRequestB = RedisRequest.copy({ REPLACE: true }, "hoge", "fuga");
+const redisRequestC = RedisRequest.copy({ DB: 2 }, "hoge", "fuga");
+```
+
+##### RedisRequest`.del` [📕](https://redis.io/commands/del)
+`(String, ...) → RedisRequest`, or `String[] → RedisRequest`
+
+```js
+const redisRequestA = RedisRequest.del("hoge", "fuga");
+const redisRequestB = RedisRequest.del([ "hoge", "fuga" ]);
+```
+
+##### RedisRequest`.dump` [📕](https://redis.io/commands/dump)
+`String → RedisRequest`
+
+```js
+const redisRequest = RedisRequest.dump("hoge");
+```
+
+##### RedisRequest`.exists` [📕](https://redis.io/commands/exists)
+`(String, ...) → RedisRequest`, or `String[] → RedisRequest`
+
+```js
+const redisRequestA = RedisRequest.exists("hoge", "fuga");
+const redisRequestB = RedisRequest.exists([ "hoge", "fuga" ]);
+```
+
+##### RedisRequest`.expire` [📕](https://redis.io/commands/expire)
+`Number → String → RedisRequest`
+
+```js
+const redisRequest = RedisRequest.expire(10, "hoge");
+```
+
+##### RedisRequest`.expireat` [📕](https://redis.io/commands/expireat)
+`Date|Number → String → RedisRequest`
+
+```js
+const redisRequestA = RedisRequest.expireat(new Date(), "hoge");
+const redisRequestB = RedisRequest.expireat(Date.now(), "hoge");
+```
+
+##### RedisRequest`.keys` [📕](https://redis.io/commands/keys)
+`String → RedisRequest`
+
+```js
+const redisRequest = RedisRequest.keys("*ge");
+```
+
+##### RedisRequest`.migrate` [📕](https://redis.io/commands/migrate)
+`Object → String|String[] → RedisRequest`
+
+```js
+const redisRequestA = RedisRequest.migrate({ host: "127.0.0.1", port: 6379, db: 3, timeout: 5000 }, "hoge");
+const redisRequestB = RedisRequest.migrate(
+  { host: "127.0.0.1", port: 6379, db: 3, timeout: 5000 },
+  [ "hoge", "fuga" ]
+);
+const redisRequestC = RedisRequest.migrate(
+  { host: "127.0.0.1", port: 6379, db: 3, timeout: 5000, REPLACE: true },
+  "hoge"
+);
+const redisRequestD = RedisRequest.migrate(
+  { host: "127.0.0.1", port: 6379, db: 3, timeout: 5000, password },
+  "hoge"
+);
+const redisRequestE = RedisRequest.migrate(
+  { host: "127.0.0.1", port: 6379, db: 3, timeout: 5000, username, password },
+  "hoge"
+);
+```
+
+##### RedisRequest`.move` [📕](https://redis.io/commands/move)
+`Number → String → RedisRequest`
+
+```js
+const redisRequest = RedisRequest.move(3, "hoge");
+```
+
+##### RedisRequest`.object` [📕](https://redis.io/commands/object)
+`String → String|String[] → RedisRequest`
+
+```js
+const redisRequestA = RedisRequest.object("ENCODING", "hoge");
+const redisRequestB = RedisRequest.object("ENCODING", [ "hoge" ]);
+```
+
+##### RedisRequest`.persist` [📕](https://redis.io/commands/persist)
+`String → RedisRequest`
+
+```js
+const redisRequest = RedisRequest.persist("hoge");
+```
+
+##### RedisRequest`.pexpireat` [📕](https://redis.io/commands/pexpireat)
+`Date|Number → String → RedisRequest`
+
+```js
+const redisRequestA = RedisRequest.pexpireat(new Date(), "hoge");
+const redisRequestB = RedisRequest.pexpireat(Date.now(), "hoge");
+```
+
+##### RedisRequest`.pexpire` [📕](https://redis.io/commands/pexpire)
+`Number → String → RedisRequest`
+
+```js
+const redisRequest = RedisRequest.pexpire(5000, "hoge");
+```
+
+##### RedisRequest`.ptll` [📕](https://redis.io/commands/ptll)
+`String → RedisRequest`
+
+```js
+const redisRequest = RedisRequest.pttl("hoge");
+```
+
+##### RedisRequest`.randomkey` [📕](https://redis.io/commands/randomkey)
+`String → RedisRequest`
+
+```js
+const redisRequest = RedisRequest.randomkey("hoge");
+```
+
+##### RedisRequest`.rename` [📕](https://redis.io/commands/rename)
+`String → String → RedisRequest`
+
+```js
+const redisRequest = RedisRequest.rename("hoge", "hogefuga");
+```
+
+##### RedisRequest`.renamenx` [📕](https://redis.io/commands/renamenx)
+`String → String → RedisRequest`
+
+```js
+const redisRequest = RedisRequest.renamenx("hoge", "hogefuga");
+```
+
+##### RedisRequest`.restore` [📕](https://redis.io/commands/restore)
+`Object → String → String|Uint8Array → RedisRequest`
+
+```js
+const redisRequestA = RedisRequest.restore(
+  { ttl: 10 },
+  "hoge",
+  String.raw`\u0000\xC0\n\t\u0000\xBEm\u0006\x89Z(\u0000\n`
+);
+const redisRequestB = RedisRequest.restore(
+  { ttl: 10 },
+  "hoge",
+  encodeText(String.raw`\u0000\xC0\n\t\u0000\xBEm\u0006\x89Z(\u0000\n`)
+);
+const redisRequestC = RedisRequest.restore(
+  { ttl: 10, REPLACE: true },
+  "hoge",
+  String.raw`\u0000\xC0\n\t\u0000\xBEm\u0006\x89Z(\u0000\n`
+);
+const redisRequestD = RedisRequest.restore(
+  { ttl: 10, IDLETIME: 1 },
+  "hoge",
+  String.raw`\u0000\xC0\n\t\u0000\xBEm\u0006\x89Z(\u0000\n`
+);
+```
+
+##### RedisRequest`.scan` [📕](https://redis.io/commands/scan)
+`Object → Number → RedisRequest`
+
+```js
+const redisRequestA = RedisRequest.scan({}, 0);
+const redisRequestB = RedisRequest.scan({ MATCH: "*yo", COUNT: 1000 }, 0);
+```
+
+##### RedisRequest`.sort` [📕](https://redis.io/commands/migrate)
+`Object → String → RedisRequest`
+
+```js
+const redisRequestA = RedisRequest.sort({}, "hoge");
+const redisRequestB = RedisRequest.sort({ BY: "fuga" }, "hoge");
+const redisRequestC = RedisRequest.sort({ LIMIT: 10 }, "hoge");
+const redisRequestD = RedisRequest.sort({ ASC: true }, "hoge");
+const redisRequestE = RedisRequest.sort({ DESC: true, ALPHA: true }, "hoge");
+const redisRequestF = RedisRequest.sort({ STORE: "fuga" }, "hoge");
+const redisRequestG = RedisRequest.sort({ GET: [ "*" ], ALPHA: true }, "hoge");
+const redisRequestH = RedisRequest.sort({ LIMIT: 10, GET: [ "*", "#" ], ALPHA: true }, "hoge");
+```
+
+##### RedisRequest`.touch` [📕](https://redis.io/commands/ptll)
+`String|String[] → RedisRequest`
+
+```js
+const redisRequestA = RedisRequest.touch("hoge");
+const redisRequestB = RedisRequest.touch([ "hoge", "fuga" ]);
+```
+
+##### RedisRequest`.ttl` [📕](https://redis.io/commands/ttl)
+`String → RedisRequest`
+
+```js
+const redisRequest = RedisRequest.ttl("hoge");
+```
+
+##### RedisRequest`.type` [📕](https://redis.io/commands/type)
+`String → RedisRequest`
+
+```js
+const redisRequest = RedisRequest.type("hoge");
+```
+
+##### RedisRequest`.unlink` [📕](https://redis.io/commands/unlink)
+`String|String[] → RedisRequest`
+
+```js
+const redisRequestA = RedisRequest.unlink("hoge");
+const redisRequestB = RedisRequest.unlink([ "hoge", "fuga" ]);
+```
+
+##### RedisRequest`.wait` [📕](https://redis.io/commands/wait)
+`Number → Number → RedisRequest`
+
+```js
+const redisRequest = RedisRequest.wait(1,10);
+```
+
+***
+
+#### Hash commands
+
+##### RedisRequest`.hdel` [📕](https://redis.io/commands/hdel)
+`String → String|String[] → RedisRequest`
+
+```js
+const redisRequestA = RedisRequest.hdel("hoge", "piyo");
+const redisRequestB = RedisRequest.hdel("hoge", [ "piyo", "fuga" ]);
+```
+
+##### RedisRequest`.hexists` [📕](https://redis.io/commands/hexists)
+`String → String → RedisRequest`
+
+```js
+const redisRequest = RedisRequest.hexists("hoge", "piyo");
+```
+
+##### RedisRequest`.hget` [📕](https://redis.io/commands/hget)
+`String → String → RedisRequest`
+
+```js
+const redisRequest = RedisRequest.hget("hoge", "piyo");
+```
+
+##### RedisRequest`.hgetall` [📕](https://redis.io/commands/hgetall)
+`String → RedisRequest`
+
+```js
+const redisRequest = RedisRequest.hgetall("hoge");
+```
+
+##### RedisRequest`.hincrby` [📕](https://redis.io/commands/hincrby)
+`String → Number → String → RedisRequest`
+
+```js
+const redisRequest = RedisRequest.hincrby("hoge", 3, "piyo");
+```
+
+##### RedisRequest`.hincrbyfloat` [📕](https://redis.io/commands/hincrbyfloat)
+`String → Number → String → RedisRequest`
+
+```js
+const redisRequestA = RedisRequest.hincrbyfloat("hoge", 0.1, "piyo");
+const redisRequestB = RedisRequest.hincrbyfloat("hoge", -5, "piyo");
+const redisRequestC = RedisRequest.hincrbyfloat("hoge", 5.0e3, "piyo");
+```
+
+##### RedisRequest`.hkeys` [📕](https://redis.io/commands/hkeys)
+`String → RedisRequest`
+
+```js
+const redisRequest = RedisRequest.hkeys("hoge");
+```
+
+##### RedisRequest`.hlen` [📕](https://redis.io/commands/hlen)
+`String → RedisRequest`
+
+```js
+const redisRequest = RedisRequest.hlen("hoge");
+```
+
+##### RedisRequest`.hmget` [📕](https://redis.io/commands/hmget)
+`String → String|String[] → RedisRequest`
+
+```js
+const redisRequestA = RedisRequest.hmget("hoge", "piyo");
+const redisRequestB = RedisRequest.hmget("hoge", [ "piyo", "fuga" ]);
+```
+
+##### RedisRequest`.hmset` [📕](https://redis.io/commands/hmset)
+`String → String → String|Uint8Array → RedisRequest` or, `String → String[] → Uint8Array → RedisRequest`
+
+```js
+const redisRequestA = RedisRequest.hmset("hoge", "piyo", "fuga");
+const redisRequestB = RedisRequest.hmset("hoge", "piyo", encodeText("fuga"));
+const redisRequestC = RedisRequest.hmset(
+  "hoge",
+  [ "piyo", $$rawPlaceholder, "fuga", $$rawPlaceholder ],
+  encodeText("hogepiyo\r\nhogefuga\r\n")
+);
+```
+
+##### RedisRequest`.hscan` [📕](https://redis.io/commands/hscan)
+`Object → String → Number → RedisRequest`
+
+```js
+const redisRequestA = RedisRequest.hscan({}, "hoge", 0);
+const redisRequestB = RedisRequest.hscan({ MATCH: "*yo", COUNT: 1000 }, "hoge", 0);
+```
+
+##### RedisRequest`.hset` [📕](https://redis.io/commands/hset)
+`String → String → (String|Uint8Array) → RedisRequest`
+
+```js
+const redisRequestA = RedisRequest.hset("hoge", "piyo", "fuga");
+const redisRequestB = RedisRequest.hset("hoge", "piyo", encodeText("fuga"));
+```
+
+##### RedisRequest`.hsetnx` [📕](https://redis.io/commands/hsetnx)
+`String → String → (String|Uint8Array) → RedisRequest`
+
+```js
+const redisRequestA = RedisRequest.hsetnx("hoge", "piyo", "fuga");
+const redisRequestB = RedisRequest.hsetnx("hoge", "piyo", encodeText("fuga"));
+```
+
+##### RedisRequest`.hstrlen` [📕](https://redis.io/commands/hstrlen)
+`String → String → RedisRequest`
+
+```js
+const redisRequest = RedisRequest.hstrlen("hoge", "piyo");
+```
+
+##### RedisRequest`.hvals` [📕](https://redis.io/commands/hvals)
+`String → RedisRequest`
+
+```js
+const redisRequest = RedisRequest.hvals("hoge");
+```
+
+***
+
+#### Server commands
 
 ##### RedisRequest`.flushall` [📕](https://redis.io/commands/flushall)
 `() → RedisRequest`
