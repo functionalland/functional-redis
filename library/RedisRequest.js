@@ -5,6 +5,7 @@ import {
   filter,
   flatten,
   map,
+  reduce,
   toPairs,
   when
 } from "https://deno.land/x/ramda@v0.27.2/mod.ts";
@@ -14,7 +15,8 @@ import {
   assertIsArray,
   assertIsBoolean,
   assertIsInstance,
-  assertIsString
+  assertIsString,
+  log
 } from "https://deno.land/x/functional@v1.3.2/library/utilities.js";
 
 export const RedisRequest = factorizeType("RedisRequest", [ "command", "raw", "arguments" ]);
@@ -145,7 +147,16 @@ RedisRequest.of = RedisRequest.prototype.of = RedisRequest.prototype["fantasy-la
 
 const normalizeValue = when(complement(assertIsString), String);
 const normalizeOptions = map(normalizeValue);
-const spreadOptions = compose(normalizeOptions, filter(complement(assertIsBoolean)), flatten, toPairs);
+const spreadOptions = compose(
+  normalizeOptions,
+  filter(complement(assertIsBoolean)),
+  flatten,
+  map(
+    ([ key, value ]) =>
+      key === "GET" ? reduce((accumulator, pattern) =>  [ ...accumulator, 'GET', pattern ],[], value) : [ key, value ]
+  ),
+  toPairs
+);
 
 /**
  * #### `factorizeRedisRequest`
@@ -181,6 +192,7 @@ RedisRequest.append = curry(
       ]
     )
 );
+
 /**
  * ##### RedisRequest`.bitcount` [📕](https://redis.io/commands/bitcount)
  * `String -> [ Number, Number ] -> RedisRequest`
@@ -192,6 +204,7 @@ RedisRequest.append = curry(
 RedisRequest.bitcount = curry(
   (key, range) => RedisRequest("BITCOUNT", new Uint8Array([]), [ key, ...normalizeOptions(range) ])
 );
+
 /**
  * ##### RedisRequest`.bitfield` [📕](https://redis.io/commands/bitfield)
  * `String -> String[] -> RedisRequest`
@@ -203,6 +216,7 @@ RedisRequest.bitcount = curry(
 RedisRequest.bitfield = curry(
   (key, subcommand) => RedisRequest("BITFIELD", new Uint8Array([]), [ key, ...normalizeOptions(subcommand) ])
 );
+
 /**
  * ##### RedisRequest`.bitop` [📕](https://redis.io/commands/bitop)
  * `String -> String -> String[] -> RedisRequest`
@@ -215,6 +229,7 @@ RedisRequest.bitop = curry(
   (operation, destinationKey, keyList) =>
     RedisRequest("BITOP", new Uint8Array([]), [ operation, destinationKey, ...keyList ])
 );
+
 /**
  * ##### RedisRequest`.bitpos` [📕](https://redis.io/commands/bitpos)
  * `String -> [ Number, Number ] -> RedisRequest`
@@ -226,6 +241,7 @@ RedisRequest.bitop = curry(
 RedisRequest.bitpos = curry(
   (key, range) => RedisRequest("BITPOS", new Uint8Array([]), [ key, ...normalizeOptions(range) ])
 );
+
 /**
  * ##### RedisRequest`.decr` [📕](https://redis.io/commands/decr)
  * `String -> RedisRequest`
@@ -235,6 +251,7 @@ RedisRequest.bitpos = curry(
  * ```
  */
 RedisRequest.decr = key => RedisRequest("DECR", new Uint8Array([]), [ key ]);
+
 /**
  * ##### RedisRequest`.decrby` [📕](https://redis.io/commands/decrby)
  * `String -> Number -> RedisRequest`
@@ -246,6 +263,7 @@ RedisRequest.decr = key => RedisRequest("DECR", new Uint8Array([]), [ key ]);
 RedisRequest.decrby = curry(
   (key, amount) => RedisRequest("DECRBY", new Uint8Array([]), [ key, normalizeValue(amount) ])
 );
+
 /**
  * ##### RedisRequest`.get` [📕](https://redis.io/commands/get)
  * `String -> RedisRequest`
@@ -255,6 +273,7 @@ RedisRequest.decrby = curry(
  * ```
  */
 RedisRequest.get = key => RedisRequest("GET", new Uint8Array([]), [ key ]);
+
 /**
  * ##### RedisRequest`.getbit` [📕](https://redis.io/commands/getbit)
  * `String -> Number -> RedisRequest`
@@ -266,6 +285,7 @@ RedisRequest.get = key => RedisRequest("GET", new Uint8Array([]), [ key ]);
 RedisRequest.getbit = curry(
   (key, offset) => RedisRequest("GETBIT", new Uint8Array([]), [ key, normalizeValue(offset) ])
 );
+
 /**
  * ##### RedisRequest`.getrange` [📕](https://redis.io/commands/getrange)
  * `String -> [ Number, Number ] -> RedisRequest`
@@ -278,6 +298,7 @@ RedisRequest.getrange = curry(
   (key, range) =>
     RedisRequest("GETRANGE", new Uint8Array([]), [ key, ...normalizeOptions(range) ])
 );
+
 /**
  * ##### RedisRequest`.getset` [📕](https://redis.io/commands/getset)
  * `String -> (String|Uint8Array) -> RedisRequest`
@@ -298,6 +319,7 @@ RedisRequest.getset = curry(
       ]
     )
 );
+
 /**
  * ##### RedisRequest`.incr` [📕](https://redis.io/commands/incr)
  * `String -> RedisRequest`
@@ -307,6 +329,7 @@ RedisRequest.getset = curry(
  * ```
  */
 RedisRequest.incr = key => RedisRequest("INCR", new Uint8Array([]), [ key ]);
+
 /**
  * ##### RedisRequest`.incrby` [📕](https://redis.io/commands/incrby)
  * `String -> Number -> RedisRequest`
@@ -318,6 +341,7 @@ RedisRequest.incr = key => RedisRequest("INCR", new Uint8Array([]), [ key ]);
 RedisRequest.incrby = curry(
   (key, amount) => RedisRequest("INCRBY", new Uint8Array([]), [ key, normalizeValue(amount) ])
 );
+
 /**
  * ##### RedisRequest`.incrbyfloat` [📕](https://redis.io/commands/incrbyfloat)
  * `String -> Number -> RedisRequest`
@@ -329,18 +353,25 @@ RedisRequest.incrby = curry(
 RedisRequest.incrbyfloat = curry(
   (key, amount) => RedisRequest("INCRBYFLOAT", new Uint8Array([]), [ key, normalizeValue(amount) ])
 );
+
 /**
  * ##### RedisRequest`.mget` [📕](https://redis.io/commands/mget)
- * `(...String) -> RedisRequest`
+ * `(String, ...) -> RedisRequest`, or `String[] -> RedisRequest`
  *
  * ```js
- * const redisRequest = RedisRequest.mget("hoge", "piyo");
+ * const redisRequestA = RedisRequest.mget("hoge", "piyo");
+ * const redisRequestB = RedisRequest.mget([ "hoge", "piyo" ]);
  * ```
  */
-RedisRequest.mget = (...keys) => RedisRequest("MGET", new Uint8Array([]), keys);
+RedisRequest.mget = (...keyList) => RedisRequest(
+  "MGET",
+  new Uint8Array([]),
+  assertIsArray(keyList[0]) ? keyList[0] : keyList
+);
+
 /**
  * ##### RedisRequest`.mset` [📕](https://redis.io/commands/mset)
- * `(...String) -> RedisRequest`, or `(String|Symbol)[] -> Uint8Array -> RedisRequest`
+ * `(String, ...) -> RedisRequest`, or `(String|Symbol)[] -> Uint8Array -> RedisRequest`
  *
  * ```js
  * const redisRequestA = RedisRequest.mset("hoge", "piyo", "hogefuga", "fuga");
@@ -358,9 +389,10 @@ RedisRequest.mset = curry(
       assertIsString(valueList) ? [ valueList, ...(assertIsArray(_buffer) ? _buffer : [ _buffer ]) ] : valueList
     )
 );
+
 /**
  * ##### RedisRequest`.msetnx` [📕](https://redis.io/commands/msetnx)
- * `(...String) -> RedisRequest`, or `(String|Symbol)[] -> Uint8Array -> RedisRequest`
+ * `(String, ...) -> RedisRequest`, or `(String|Symbol)[] -> Uint8Array -> RedisRequest`
  *
  * ```js
  * const redisRequestA = RedisRequest.msetnx("hoge", "piyo", "hogefuga", "fuga");
@@ -371,13 +403,14 @@ RedisRequest.mset = curry(
  * ```
  */
 RedisRequest.msetnx = curry(
-  (valueList, _buffer) =>
+  (valueList, ...argumentList) =>
     RedisRequest(
       "MSETNX",
-      assertIsInstance(Uint8Array, _buffer) ? _buffer : new Uint8Array([]),
-      assertIsString(valueList) ? [ valueList, ...(assertIsArray(_buffer) ? _buffer : [ _buffer ]) ] : valueList
+      assertIsInstance(Uint8Array, argumentList[0]) ? argumentList[0] : new Uint8Array([]),
+      assertIsString(valueList) ? [ valueList, ...argumentList ] : valueList
     )
 );
+
 /**
  * ##### RedisRequest`.psetex` [📕](https://redis.io/commands/psetex)
  * `Number -> String -> (String|Uint8Array) -> RedisRequest`
@@ -399,6 +432,7 @@ RedisRequest.psetex = curry(
       ]
     )
 );
+
 /**
  * ##### RedisRequest`.set` [📕](https://redis.io/commands/set)
  * `Object -> String -> (String|Uint8Array) -> RedisRequest`
@@ -422,6 +456,7 @@ RedisRequest.set = curry(
       ]
     )
 );
+
 /**
  * ##### RedisRequest`.setbit` [📕](https://redis.io/commands/setbit)
  * `String -> Number -> Number -> RedisRequest`
@@ -434,6 +469,7 @@ RedisRequest.setbit = curry(
   (key, offset, value) =>
     RedisRequest("SETBIT", new Uint8Array([]), [ key, normalizeValue(offset), normalizeValue(value) ])
 );
+
 /**
  * ##### RedisRequest`.setex` [📕](https://redis.io/commands/setex)
  * `Number -> String -> (String|Uint8Array) -> RedisRequest`
@@ -455,6 +491,7 @@ RedisRequest.setex = curry(
       ]
     )
 );
+
 /**
  * ##### RedisRequest`.setnx` [📕](https://redis.io/commands/setnx)
  * `String -> (String|Uint8Array) -> RedisRequest`
@@ -475,6 +512,7 @@ RedisRequest.setnx = curry(
       ]
     )
 );
+
 /**
  * ##### RedisRequest`.setrange` [📕](https://redis.io/commands/setrange)
  * `String -> Number -> (String|Uint8Array) -> RedisRequest`
@@ -495,17 +533,18 @@ RedisRequest.setrange = curry(
       ]
     )
 );
+
 /**
  * ##### RedisRequest`.stralgo` [📕](https://redis.io/commands/stralgo)
- * `(...String) -> RedisRequest`
+ * `(String, ...) -> RedisRequest`
  *
  * ```js
  * const redisRequest = RedisRequest.strlen("LCS", "KEYS, "hoge", "piyo");
  * ```
  */
-RedisRequest.stralgo = curry(
-  (...subcommands) => RedisRequest("STRALGO", new Uint8Array([]), normalizeOptions(subcommands))
-);
+RedisRequest.stralgo = (...subcommands) =>
+  RedisRequest("STRALGO", new Uint8Array([]), normalizeOptions(subcommands));
+
 /**
  * ##### RedisRequest`.strlen` [📕](https://redis.io/commands/strlen)
  * `String -> RedisRequest`
@@ -515,6 +554,664 @@ RedisRequest.stralgo = curry(
  * ```
  */
 RedisRequest.strlen = key => RedisRequest("STRLEN", new Uint8Array([]), [ key ]);
+
+/**
+ * ***
+ *
+ * #### Key commands
+ */
+
+/**
+ * ##### RedisRequest`.copy` [📕](https://redis.io/commands/copy)
+ * `Object -> String -> String -> RedisRequest`
+ *
+ * ```js
+ * const redisRequestA = RedisRequest.copy({}, "hoge", "fuga");
+ * const redisRequestB = RedisRequest.copy({ REPLACE: true }, "hoge", "fuga");
+ * const redisRequestC = RedisRequest.copy({ DB: 2 }, "hoge", "fuga");
+ * ```
+ */
+RedisRequest.copy = curry(
+  (options, sourceKey, destinationKey) =>
+    RedisRequest(
+      "COPY",
+      new Uint8Array([]),
+      [
+        sourceKey,
+        destinationKey,
+        ...spreadOptions(options)
+      ]
+    )
+);
+
+/**
+ * ##### RedisRequest`.del` [📕](https://redis.io/commands/del)
+ * `(String, ...) -> RedisRequest`, or `String[] -> RedisRequest`
+ *
+ * ```js
+ * const redisRequestA = RedisRequest.del("hoge", "fuga");
+ * const redisRequestB = RedisRequest.del([ "hoge", "fuga" ]);
+ * ```
+ */
+RedisRequest.del = (...keyList) =>
+  RedisRequest("DEL", new Uint8Array([]), assertIsArray(keyList[0]) ? keyList[0] : keyList);
+
+/**
+ * ##### RedisRequest`.dump` [📕](https://redis.io/commands/dump)
+ * `String -> RedisRequest`
+ *
+ * ```js
+ * const redisRequest = RedisRequest.dump("hoge");
+ * ```
+ */
+RedisRequest.dump = key => RedisRequest("DUMP", new Uint8Array([]), [ key ]);
+
+/**
+ * ##### RedisRequest`.exists` [📕](https://redis.io/commands/exists)
+ * `(String, ...) -> RedisRequest`, or `String[] -> RedisRequest`
+ *
+ * ```js
+ * const redisRequestA = RedisRequest.exists("hoge", "fuga");
+ * const redisRequestB = RedisRequest.exists([ "hoge", "fuga" ]);
+ * ```
+ */
+RedisRequest.exists = (...keyList) =>
+  RedisRequest("EXISTS", new Uint8Array([]), assertIsArray(keyList[0]) ? keyList[0] : keyList);
+
+/**
+ * ##### RedisRequest`.expire` [📕](https://redis.io/commands/expire)
+ * `Number -> String -> RedisRequest`
+ *
+ * ```js
+ * const redisRequest = RedisRequest.expire(10, "hoge");
+ * ```
+ */
+RedisRequest.expire = curry(
+  (ttl, key) => RedisRequest("EXPIRE", new Uint8Array([]), [ key, normalizeValue(ttl) ])
+);
+
+/**
+ * ##### RedisRequest`.expireat` [📕](https://redis.io/commands/expireat)
+ * `Date|Number -> String -> RedisRequest`
+ *
+ * ```js
+ * const redisRequestA = RedisRequest.expireat(new Date(), "hoge");
+ * const redisRequestB = RedisRequest.expireat(Date.now(), "hoge");
+ * ```
+ */
+RedisRequest.expireat = curry(
+  (timestamp, key) => RedisRequest(
+    "EXPIREAT",
+    new Uint8Array([]),
+    [ key, normalizeValue(assertIsInstance(Date, timestamp) ? timestamp.valueOf() : timestamp) ]
+  )
+);
+
+/**
+ * ##### RedisRequest`.keys` [📕](https://redis.io/commands/keys)
+ * `String -> RedisRequest`
+ *
+ * ```js
+ * const redisRequest = RedisRequest.keys("*ge");
+ * ```
+ */
+RedisRequest.keys = pattern => RedisRequest("KEYS", new Uint8Array([]), [ pattern ]);
+
+/**
+ * ##### RedisRequest`.migrate` [📕](https://redis.io/commands/migrate)
+ * `Object -> String|String[] -> RedisRequest`
+ *
+ * ```js
+ * const redisRequestA = RedisRequest.migrate({ host: "127.0.0.1", port: 6379, db: 3, timeout: 5000 }, "hoge");
+ * const redisRequestB = RedisRequest.migrate(
+ *   { host: "127.0.0.1", port: 6379, db: 3, timeout: 5000 },
+ *   [ "hoge", "fuga" ]
+ * );
+ * const redisRequestC = RedisRequest.migrate(
+ *   { host: "127.0.0.1", port: 6379, db: 3, timeout: 5000, REPLACE: true },
+ *   "hoge"
+ * );
+ * const redisRequestD = RedisRequest.migrate(
+ *   { host: "127.0.0.1", port: 6379, db: 3, timeout: 5000, password },
+ *   "hoge"
+ * );
+ * const redisRequestE = RedisRequest.migrate(
+ *   { host: "127.0.0.1", port: 6379, db: 3, timeout: 5000, username, password },
+ *   "hoge"
+ * );
+ * ```
+ */
+RedisRequest.migrate = curry(
+  ({ host, port, db, timeout, username, password, ...options }, keyList) =>
+    RedisRequest(
+      "MIGRATE",
+      new Uint8Array([]),
+      [
+        host,
+        normalizeValue(port),
+        assertIsArray(keyList) ? "" : keyList,
+        normalizeValue(db),
+        normalizeValue(timeout),
+        ...spreadOptions(options),
+        ...(password ? username ? [ "AUTH2", username, password ] : [ "AUTH", password ] : []),
+        ...(assertIsArray(keyList) ? [ "KEYS", ...keyList ] : [])
+      ]
+    )
+);
+
+/**
+ * ##### RedisRequest`.move` [📕](https://redis.io/commands/move)
+ * `Number -> String -> RedisRequest`
+ *
+ * ```js
+ * const redisRequest = RedisRequest.move(3, "hoge");
+ * ```
+ */
+RedisRequest.move = curry(
+  (db, key) => RedisRequest("MOVE", new Uint8Array([]), [ key, normalizeValue(db) ])
+);
+
+/**
+ * ##### RedisRequest`.object` [📕](https://redis.io/commands/object)
+ * `String -> String|String[] -> RedisRequest`
+ *
+ * ```js
+ * const redisRequestA = RedisRequest.object("ENCODING", "hoge");
+ * const redisRequestB = RedisRequest.object("ENCODING", [ "hoge" ]);
+ * ```
+ */
+RedisRequest.object = curry(
+  (subcommand, argumentList) =>
+    RedisRequest(
+      "OBJECT",
+      new Uint8Array([]),
+      [
+        subcommand,
+        ...(assertIsArray(argumentList) ? normalizeOptions(argumentList) : [ normalizeValue(argumentList) ])
+      ]
+    )
+);
+
+/**
+ * ##### RedisRequest`.persist` [📕](https://redis.io/commands/persist)
+ * `String -> RedisRequest`
+ *
+ * ```js
+ * const redisRequest = RedisRequest.persist("hoge");
+ * ```
+ */
+RedisRequest.persist = key => RedisRequest("PERSIST", new Uint8Array([]), [ key ]);
+
+/**
+ * ##### RedisRequest`.pexpireat` [📕](https://redis.io/commands/pexpireat)
+ * `Date|Number -> String -> RedisRequest`
+ *
+ * ```js
+ * const redisRequestA = RedisRequest.pexpireat(new Date(), "hoge");
+ * const redisRequestB = RedisRequest.pexpireat(Date.now(), "hoge");
+ * ```
+ */
+RedisRequest.pexpireat = curry(
+  (timestamp, key) => RedisRequest(
+    "PEXPIREAT",
+    new Uint8Array([]),
+    [ key, normalizeValue(assertIsInstance(Date, timestamp) ? timestamp.valueOf() * 1000 : timestamp) ]
+  )
+);
+
+/**
+ * ##### RedisRequest`.pexpire` [📕](https://redis.io/commands/pexpire)
+ * `Number -> String -> RedisRequest`
+ *
+ * ```js
+ * const redisRequest = RedisRequest.pexpire(5000, "hoge");
+ * ```
+ */
+RedisRequest.pexpire = curry(
+  (ttl, key) => RedisRequest("PEXPIRE", new Uint8Array([]), [ key, normalizeValue(ttl) ])
+);
+
+/**
+ * ##### RedisRequest`.ptll` [📕](https://redis.io/commands/ptll)
+ * `String -> RedisRequest`
+ *
+ * ```js
+ * const redisRequest = RedisRequest.pttl("hoge");
+ * ```
+ */
+RedisRequest.pttl = key => RedisRequest("PTTL", new Uint8Array([]), [ key ]);
+
+/**
+ * ##### RedisRequest`.randomkey` [📕](https://redis.io/commands/randomkey)
+ * `String -> RedisRequest`
+ *
+ * ```js
+ * const redisRequest = RedisRequest.randomkey("hoge");
+ * ```
+ */
+RedisRequest.randomkey = () => RedisRequest("RANDOMKEY", new Uint8Array([]), []);
+
+/**
+ * ##### RedisRequest`.rename` [📕](https://redis.io/commands/rename)
+ * `String -> String -> RedisRequest`
+ *
+ * ```js
+ * const redisRequest = RedisRequest.rename("hoge", "hogefuga");
+ * ```
+ */
+RedisRequest.rename = curry(
+  (key, newKey) => RedisRequest("RENAME", new Uint8Array([]), [ key, newKey ])
+);
+
+/**
+ * ##### RedisRequest`.renamenx` [📕](https://redis.io/commands/renamenx)
+ * `String -> String -> RedisRequest`
+ *
+ * ```js
+ * const redisRequest = RedisRequest.renamenx("hoge", "hogefuga");
+ * ```
+ */
+RedisRequest.renamenx = curry(
+  (key, newKey) => RedisRequest("RENAMENX", new Uint8Array([]), [ key, newKey ])
+);
+
+/**
+ * ##### RedisRequest`.restore` [📕](https://redis.io/commands/restore)
+ * `Object -> String -> String|Uint8Array -> RedisRequest`
+ *
+ * ```js
+ * const redisRequestA = RedisRequest.restore(
+ *   { ttl: 10 },
+ *   "hoge",
+ *   String.raw`\u0000\xC0\n\t\u0000\xBEm\u0006\x89Z(\u0000\n`
+ * );
+ * const redisRequestB = RedisRequest.restore(
+ *   { ttl: 10 },
+ *   "hoge",
+ *   encodeText(String.raw`\u0000\xC0\n\t\u0000\xBEm\u0006\x89Z(\u0000\n`)
+ * );
+ * const redisRequestC = RedisRequest.restore(
+ *   { ttl: 10, REPLACE: true },
+ *   "hoge",
+ *   String.raw`\u0000\xC0\n\t\u0000\xBEm\u0006\x89Z(\u0000\n`
+ * );
+ * const redisRequestD = RedisRequest.restore(
+ *   { ttl: 10, IDLETIME: 1 },
+ *   "hoge",
+ *   String.raw`\u0000\xC0\n\t\u0000\xBEm\u0006\x89Z(\u0000\n`
+ * );
+ * ```
+ */
+RedisRequest.restore = curry(
+  ({ ttl, ...options }, key, value) =>
+    RedisRequest(
+      "RESTORE",
+      assertIsInstance(Uint8Array, value) ? value : new Uint8Array([]),
+      [
+        key,
+        normalizeValue(ttl),
+        assertIsString(value) ? value : $$rawPlaceholder,
+        ...spreadOptions(options)
+      ]
+    )
+);
+
+/**
+ * ##### RedisRequest`.scan` [📕](https://redis.io/commands/scan)
+ * `Object -> Number -> RedisRequest`
+ *
+ * ```js
+ * const redisRequestA = RedisRequest.scan({}, 0);
+ * const redisRequestB = RedisRequest.scan({ MATCH: "*yo", COUNT: 1000 }, 0);
+ * ```
+ */
+RedisRequest.scan = curry(
+  (options, cursor) =>
+    RedisRequest(
+      "SCAN",
+      new Uint8Array([]),
+      [
+        normalizeValue(cursor),
+        ...spreadOptions(options)
+      ]
+    )
+);
+
+/**
+ * ##### RedisRequest`.sort` [📕](https://redis.io/commands/migrate)
+ * `Object -> String -> RedisRequest`
+ *
+ * ```js
+ * const redisRequestA = RedisRequest.sort({}, "hoge");
+ * const redisRequestB = RedisRequest.sort({ BY: "fuga" }, "hoge");
+ * const redisRequestC = RedisRequest.sort({ LIMIT: 10 }, "hoge");
+ * const redisRequestD = RedisRequest.sort({ ASC: true }, "hoge");
+ * const redisRequestE = RedisRequest.sort({ DESC: true, ALPHA: true }, "hoge");
+ * const redisRequestF = RedisRequest.sort({ STORE: "fuga" }, "hoge");
+ * const redisRequestG = RedisRequest.sort({ GET: [ "*" ], ALPHA: true }, "hoge");
+ * const redisRequestH = RedisRequest.sort({ LIMIT: 10, GET: [ "*", "#" ], ALPHA: true }, "hoge");
+ * ```
+ */
+RedisRequest.sort = curry(
+  (options, key) =>
+    RedisRequest(
+      "SORT",
+      new Uint8Array([]),
+      [
+        key,
+        ...spreadOptions(options)
+      ]
+    )
+);
+
+/**
+ * ##### RedisRequest`.touch` [📕](https://redis.io/commands/ptll)
+ * `String|String[] -> RedisRequest`
+ *
+ * ```js
+ * const redisRequestA = RedisRequest.touch("hoge");
+ * const redisRequestB = RedisRequest.touch([ "hoge", "fuga" ]);
+ * ```
+ */
+RedisRequest.touch = keyList =>
+  RedisRequest("TOUCH", new Uint8Array([]), assertIsArray(keyList) ? keyList : [ keyList ]);
+
+/**
+ * ##### RedisRequest`.ttl` [📕](https://redis.io/commands/ttl)
+ * `String -> RedisRequest`
+ *
+ * ```js
+ * const redisRequest = RedisRequest.ttl("hoge");
+ * ```
+ */
+RedisRequest.ttl = key => RedisRequest("TTL", new Uint8Array([]), [ key ]);
+
+/**
+ * ##### RedisRequest`.type` [📕](https://redis.io/commands/type)
+ * `String -> RedisRequest`
+ *
+ * ```js
+ * const redisRequest = RedisRequest.type("hoge");
+ * ```
+ */
+RedisRequest.type = key => RedisRequest("TYPE", new Uint8Array([]), [ key ]);
+
+/**
+ * ##### RedisRequest`.unlink` [📕](https://redis.io/commands/unlink)
+ * `String|String[] -> RedisRequest`
+ *
+ * ```js
+ * const redisRequestA = RedisRequest.unlink("hoge");
+ * const redisRequestB = RedisRequest.unlink([ "hoge", "fuga" ]);
+ * ```
+ */
+RedisRequest.unlink = keyList =>
+  RedisRequest("UNLINK", new Uint8Array([]), assertIsArray(keyList) ? keyList : [ keyList ]);
+
+/**
+ * ##### RedisRequest`.wait` [📕](https://redis.io/commands/wait)
+ * `Number -> Number -> RedisRequest`
+ *
+ * ```js
+ * const redisRequest = RedisRequest.wait(1,10);
+ * ```
+ */
+RedisRequest.wait = curry(
+  (replicaCount, timeout) =>
+    RedisRequest("WAIT", new Uint8Array([]), [ normalizeValue(replicaCount), normalizeValue(timeout) ])
+);
+
+/**
+ * ***
+ *
+ * #### Hash commands
+ */
+
+/**
+ * ##### RedisRequest`.hdel` [📕](https://redis.io/commands/hdel)
+ * `String -> String|String[] -> RedisRequest`
+ *
+ * ```js
+ * const redisRequestA = RedisRequest.hdel("hoge", "piyo");
+ * const redisRequestB = RedisRequest.hdel("hoge", [ "piyo", "fuga" ]);
+ * ```
+ */
+RedisRequest.hdel = curry(
+  (key, fieldList) =>
+    RedisRequest(
+      "HDEL",
+      new Uint8Array([]),
+      [
+        key,
+        ...(assertIsString(fieldList) ? [ fieldList ] : fieldList)
+      ]
+    )
+);
+
+/**
+ * ##### RedisRequest`.hexists` [📕](https://redis.io/commands/hexists)
+ * `String -> String -> RedisRequest`
+ *
+ * ```js
+ * const redisRequest = RedisRequest.hexists("hoge", "piyo");
+ * ```
+ */
+RedisRequest.hexists = curry(
+  (key, field) => RedisRequest("HEXISTS", new Uint8Array([]), [ key, field ])
+);
+
+/**
+ * ##### RedisRequest`.hget` [📕](https://redis.io/commands/hget)
+ * `String -> String -> RedisRequest`
+ *
+ * ```js
+ * const redisRequest = RedisRequest.hget("hoge", "piyo");
+ * ```
+ */
+RedisRequest.hget = curry(
+  (key, field) => RedisRequest("HGET", new Uint8Array([]), [ key, field ])
+);
+
+/**
+ * ##### RedisRequest`.hgetall` [📕](https://redis.io/commands/hgetall)
+ * `String -> RedisRequest`
+ *
+ * ```js
+ * const redisRequest = RedisRequest.hgetall("hoge");
+ * ```
+ */
+RedisRequest.hgetall = key => RedisRequest("HGETALL", new Uint8Array([]), [ key ]);
+
+/**
+ * ##### RedisRequest`.hincrby` [📕](https://redis.io/commands/hincrby)
+ * `String -> Number -> String -> RedisRequest`
+ *
+ * ```js
+ * const redisRequest = RedisRequest.hincrby("hoge", 3, "piyo");
+ * ```
+ */
+RedisRequest.hincrby = curry(
+  (key, amount, field) => RedisRequest("HINCRBY", new Uint8Array([]), [ key, field, normalizeValue(amount) ])
+);
+
+/**
+ * ##### RedisRequest`.hincrbyfloat` [📕](https://redis.io/commands/hincrbyfloat)
+ * `String -> Number -> String -> RedisRequest`
+ *
+ * ```js
+ * const redisRequestA = RedisRequest.hincrbyfloat("hoge", 0.1, "piyo");
+ * const redisRequestB = RedisRequest.hincrbyfloat("hoge", -5, "piyo");
+ * const redisRequestC = RedisRequest.hincrbyfloat("hoge", 5.0e3, "piyo");
+ * ```
+ */
+RedisRequest.hincrbyfloat = curry(
+  (key, amount, field) =>
+    RedisRequest("HINCRBYFLOAT", new Uint8Array([]), [ key, field, normalizeValue(amount) ])
+);
+
+/**
+ * ##### RedisRequest`.hkeys` [📕](https://redis.io/commands/hkeys)
+ * `String -> RedisRequest`
+ *
+ * ```js
+ * const redisRequest = RedisRequest.hkeys("hoge");
+ * ```
+ */
+RedisRequest.hkeys = key => RedisRequest("HKEYS", new Uint8Array([]), [ key ]);
+
+/**
+ * ##### RedisRequest`.hlen` [📕](https://redis.io/commands/hlen)
+ * `String -> RedisRequest`
+ *
+ * ```js
+ * const redisRequest = RedisRequest.hlen("hoge");
+ * ```
+ */
+RedisRequest.hlen = key => RedisRequest("HLEN", new Uint8Array([]), [ key ]);
+
+/**
+ * ##### RedisRequest`.hmget` [📕](https://redis.io/commands/hmget)
+ * `String -> String|String[] -> RedisRequest`
+ *
+ * ```js
+ * const redisRequestA = RedisRequest.hmget("hoge", "piyo");
+ * const redisRequestB = RedisRequest.hmget("hoge", [ "piyo", "fuga" ]);
+ * ```
+ */
+RedisRequest.hmget = curry(
+  (key, fieldList) =>
+    RedisRequest(
+      "HMGET",
+      new Uint8Array([]),
+      [
+        key,
+        ...(assertIsString(fieldList) ? [ fieldList ] : fieldList)
+      ]
+    )
+);
+
+/**
+ * ##### RedisRequest`.hmset` [📕](https://redis.io/commands/hmset)
+ * `String -> String -> String|Uint8Array -> RedisRequest` or, `String -> String[] -> Uint8Array -> RedisRequest`
+ *
+ * ```js
+ * const redisRequestA = RedisRequest.hmset("hoge", "piyo", "fuga");
+ * const redisRequestB = RedisRequest.hmset("hoge", "piyo", encodeText("fuga"));
+ * const redisRequestC = RedisRequest.hmset(
+ *   "hoge",
+ *   [ "piyo", $$rawPlaceholder, "fuga", $$rawPlaceholder ],
+ *   encodeText("hogepiyo\r\nhogefuga\r\n")
+ * );
+ * ```
+ */
+RedisRequest.hmset = curry(
+  (key, field, value) =>
+    RedisRequest(
+      "HMSET",
+      assertIsInstance(Uint8Array, value) ? value : new Uint8Array([]),
+      [
+        key,
+        ...(
+          assertIsString(field) ? [ field, assertIsString(value) ? value : $$rawPlaceholder ] : field
+        )
+      ]
+    )
+);
+
+/**
+ * ##### RedisRequest`.hscan` [📕](https://redis.io/commands/hscan)
+ * `Object -> String -> Number -> RedisRequest`
+ *
+ * ```js
+ * const redisRequestA = RedisRequest.hscan({}, "hoge", 0);
+ * const redisRequestB = RedisRequest.hscan({ MATCH: "*yo", COUNT: 1000 }, "hoge", 0);
+ * ```
+ */
+RedisRequest.hscan = curry(
+  (options, key, cursor) =>
+    RedisRequest(
+      "HSCAN",
+      new Uint8Array([]),
+      [
+        key,
+        normalizeValue(cursor),
+        ...spreadOptions(options)
+      ]
+    )
+);
+
+/**
+ * ##### RedisRequest`.hset` [📕](https://redis.io/commands/hset)
+ * `String -> String -> (String|Uint8Array) -> RedisRequest`
+ *
+ * ```js
+ * const redisRequestA = RedisRequest.hset("hoge", "piyo", "fuga");
+ * const redisRequestB = RedisRequest.hset("hoge", "piyo", encodeText("fuga"));
+ * ```
+ */
+RedisRequest.hset = curry(
+  (key, field, value) =>
+    RedisRequest(
+      "HSET",
+      assertIsInstance(Uint8Array, value) ? value : new Uint8Array([]),
+      [
+        key,
+        field,
+        assertIsString(value) ? value : $$rawPlaceholder
+      ]
+    )
+);
+
+/**
+ * ##### RedisRequest`.hsetnx` [📕](https://redis.io/commands/hsetnx)
+ * `String -> String -> (String|Uint8Array) -> RedisRequest`
+ *
+ * ```js
+ * const redisRequestA = RedisRequest.hsetnx("hoge", "piyo", "fuga");
+ * const redisRequestB = RedisRequest.hsetnx("hoge", "piyo", encodeText("fuga"));
+ * ```
+ */
+RedisRequest.hsetnx = curry(
+  (key, field, value) =>
+    RedisRequest(
+      "HSETNX",
+      assertIsInstance(Uint8Array, value) ? value : new Uint8Array([]),
+      [
+        key,
+        field,
+        assertIsString(value) ? value : $$rawPlaceholder
+      ]
+    )
+);
+
+/**
+ * ##### RedisRequest`.hstrlen` [📕](https://redis.io/commands/hstrlen)
+ * `String -> String -> RedisRequest`
+ *
+ * ```js
+ * const redisRequest = RedisRequest.hstrlen("hoge", "piyo");
+ * ```
+ */
+RedisRequest.hstrlen = curry(
+  (key, field) => RedisRequest("HSTRLEN", new Uint8Array([]), [ key, field ])
+);
+
+/**
+ * ##### RedisRequest`.hvals` [📕](https://redis.io/commands/hvals)
+ * `String -> RedisRequest`
+ *
+ * ```js
+ * const redisRequest = RedisRequest.hvals("hoge");
+ * ```
+ */
+RedisRequest.hvals = key => RedisRequest("HVALS", new Uint8Array([]), [ key ]);
+
+/**
+ * ***
+ *
+ * #### Server commands
+ */
+
 /**
  * ##### RedisRequest`.flushall` [📕](https://redis.io/commands/flushall)
  * `() -> RedisRequest`

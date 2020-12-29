@@ -406,6 +406,11 @@ Deno.test(
       RedisRequest.mget("hoge", "piyo").toString(),
       `RedisRequest("MGET", , ["hoge", "piyo"])`
     );
+
+    assertEquals(
+      RedisRequest.mget([ "hoge", "piyo" ]).toString(),
+      `RedisRequest("MGET", , ["hoge", "piyo"])`
+    );
   }
 );
 
@@ -447,7 +452,7 @@ Deno.test(
 
     assertEquals(
       RedisRequest.msetnx("hoge", "piyo", "hogefuga", "fuga").toString(),
-      `RedisRequest("MSETNX", , ["hoge", "piyo"])`
+      `RedisRequest("MSETNX", , ["hoge", "piyo", "hogefuga", "fuga"])`
     );
 
     assertEquals(
@@ -561,6 +566,587 @@ Deno.test(
     assertEquals(
       RedisRequest.strlen("hoge").toString(),
       `RedisRequest("STRLEN", , ["hoge"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.copy",
+  () => {
+    assertEquals(
+      RedisRequest.copy({}, "hoge", "fuga").toString(),
+      `RedisRequest("COPY", , ["hoge", "fuga"])`
+    );
+
+    assertEquals(
+      RedisRequest.copy({ REPLACE: true }, "hoge", "fuga").toString(),
+      `RedisRequest("COPY", , ["hoge", "fuga", "REPLACE"])`
+    );
+
+    assertEquals(
+      RedisRequest.copy({ DB: 2 }, "hoge", "fuga").toString(),
+      `RedisRequest("COPY", , ["hoge", "fuga", "DB", "2"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.del",
+  () => {
+    assertEquals(
+      RedisRequest.del("hoge", "piyo").toString(),
+      `RedisRequest("DEL", , ["hoge", "piyo"])`
+    );
+
+    assertEquals(
+      RedisRequest.del([ "hoge", "piyo" ]).toString(),
+      `RedisRequest("DEL", , ["hoge", "piyo"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.dump",
+  () => {
+    assertEquals(
+      RedisRequest.dump("hoge").toString(),
+      `RedisRequest("DUMP", , ["hoge"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.exists",
+  () => {
+    assertEquals(
+      RedisRequest.exists("hoge", "piyo").toString(),
+      `RedisRequest("EXISTS", , ["hoge", "piyo"])`
+    );
+
+    assertEquals(
+      RedisRequest.exists([ "hoge", "piyo" ]).toString(),
+      `RedisRequest("EXISTS", , ["hoge", "piyo"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.expire",
+  () => {
+    assertEquals(
+      RedisRequest.expire(10, "hoge").toString(),
+      `RedisRequest("EXPIRE", , ["hoge", "10"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.expireat",
+  () => {
+    const date = new Date();
+    const timestamp = Date.now();
+
+    assertEquals(
+      RedisRequest.expireat(date, "hoge").toString(),
+      `RedisRequest("EXPIREAT", , ["hoge", "${date.valueOf()}"])`
+    );
+
+    assertEquals(
+      RedisRequest.expireat(timestamp, "hoge").toString(),
+      `RedisRequest("EXPIREAT", , ["hoge", "${timestamp}"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.keys",
+  () => {
+    assertEquals(
+      RedisRequest.keys("*ge").toString(),
+      `RedisRequest("KEYS", , ["*ge"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.migrate",
+  () => {
+    assertEquals(
+      RedisRequest.migrate({ host: "127.0.0.1", port: 6379, db: 3, timeout: 5000 }, "hoge").toString(),
+      `RedisRequest("MIGRATE", , ["127.0.0.1", "6379", "hoge", "3", "5000"])`
+    );
+
+    assertEquals(
+      RedisRequest.migrate(
+        { host: "127.0.0.1", port: 6379, db: 3, timeout: 5000 },
+        [ "hoge", "fuga" ]
+      ).toString(),
+      `RedisRequest("MIGRATE", , ["127.0.0.1", "6379", "", "3", "5000", "KEYS", "hoge", "fuga"])`
+    );
+
+    assertEquals(
+      RedisRequest.migrate(
+        { host: "127.0.0.1", port: 6379, db: 3, timeout: 5000, REPLACE: true },
+        "hoge"
+      ).toString(),
+      `RedisRequest("MIGRATE", , ["127.0.0.1", "6379", "hoge", "3", "5000", "REPLACE"])`
+    );
+
+    assertEquals(
+      RedisRequest.migrate(
+        { host: "127.0.0.1", port: 6379, db: 3, timeout: 5000, password: "42" },
+        "hoge"
+      ).toString(),
+      `RedisRequest("MIGRATE", , ["127.0.0.1", "6379", "hoge", "3", "5000", "AUTH", "42"])`
+    );
+
+    assertEquals(
+      RedisRequest.migrate(
+        { host: "127.0.0.1", port: 6379, db: 3, timeout: 5000, password: "42", username: "superuser" },
+        "hoge"
+      ).toString(),
+      `RedisRequest("MIGRATE", , ["127.0.0.1", "6379", "hoge", "3", "5000", "AUTH2", "superuser", "42"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.move",
+  () => {
+    assertEquals(
+      RedisRequest.move(3, "hoge").toString(),
+      `RedisRequest("MOVE", , ["hoge", "3"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.object",
+  () => {
+    assertEquals(
+      RedisRequest.object("ENCODING", "hoge").toString(),
+      `RedisRequest("OBJECT", , ["ENCODING", "hoge"])`
+    );
+
+    assertEquals(
+      RedisRequest.object("ENCODING", [ "hoge" ]).toString(),
+      `RedisRequest("OBJECT", , ["ENCODING", "hoge"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.persist",
+  () => {
+    assertEquals(
+      RedisRequest.persist("hoge").toString(),
+      `RedisRequest("PERSIST", , ["hoge"])`
+    );
+  }
+);
+
+
+Deno.test(
+  "RedisRequest.pexpireat",
+  () => {
+    const date = new Date();
+    const timestamp = Date.now() * 1000;
+
+    assertEquals(
+      RedisRequest.pexpireat(date, "hoge").toString(),
+      `RedisRequest("PEXPIREAT", , ["hoge", "${date.valueOf() * 1000}"])`
+    );
+
+    assertEquals(
+      RedisRequest.pexpireat(timestamp, "hoge").toString(),
+      `RedisRequest("PEXPIREAT", , ["hoge", "${timestamp}"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.pexpire",
+  () => {
+    assertEquals(
+      RedisRequest.pexpire(5000, "hoge").toString(),
+      `RedisRequest("PEXPIRE", , ["hoge", "5000"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.pttl",
+  () => {
+    assertEquals(
+      RedisRequest.pttl("hoge").toString(),
+      `RedisRequest("PTTL", , ["hoge"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.randomkey",
+  () => {
+    assertEquals(
+      RedisRequest.randomkey().toString(),
+      `RedisRequest("RANDOMKEY", , [])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.rename",
+  () => {
+    assertEquals(
+      RedisRequest.rename("hoge", "hogefuga").toString(),
+      `RedisRequest("RENAME", , ["hoge", "hogefuga"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.renamenx",
+  () => {
+    assertEquals(
+      RedisRequest.renamenx("hoge", "hogefuga").toString(),
+      `RedisRequest("RENAMENX", , ["hoge", "hogefuga"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.restore",
+  () => {
+    const serializedValue = String.raw`\u0000\xC0\\n\\t\u0000\xBEm\u0006\x89Z(\u0000\\n`;
+
+    // assertEquals(
+    //   RedisRequest.restore({ ttl: 10 }, "hoge", serializedValue).toString(),
+    //   `RedisRequest("RESTORE", , ["hoge", "10", "${serializedValue}"])`
+    // );
+
+    assertEquals(
+      RedisRequest.restore({ ttl: 10 }, "hoge", encodeText(serializedValue)).toString(),
+      `RedisRequest("RESTORE", ${encodeText(serializedValue)}, ["hoge", "10", Symbol(RawPlaceholder)])`
+    );
+
+    assertEquals(
+      RedisRequest.restore({ ttl: 10, REPLACE: true }, "hoge", encodeText(serializedValue)).toString(),
+      `RedisRequest("RESTORE", ${encodeText(serializedValue)}, ["hoge", "10", Symbol(RawPlaceholder), "REPLACE"])`
+    );
+
+    assertEquals(
+      RedisRequest.restore({ ttl: 10, IDLETIME: 1 }, "hoge", encodeText(serializedValue)).toString(),
+      `RedisRequest("RESTORE", ${encodeText(serializedValue)}, ["hoge", "10", Symbol(RawPlaceholder), "IDLETIME", "1"])`
+    );
+
+  }
+);
+
+Deno.test(
+  "RedisRequest.scan",
+  () => {
+    assertEquals(
+      RedisRequest.scan({}, 0).toString(),
+      `RedisRequest("SCAN", , ["0"])`
+    );
+
+    assertEquals(
+      RedisRequest.scan({ MATCH: "*yo", COUNT: 1000 }, 0).toString(),
+      `RedisRequest("SCAN", , ["0", "MATCH", "*yo", "COUNT", "1000"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.sort",
+  () => {
+    assertEquals(
+      RedisRequest.sort({}, "hoge").toString(),
+      `RedisRequest("SORT", , ["hoge"])`
+    );
+
+    assertEquals(
+      RedisRequest.sort({ BY: "fuga" }, "hoge").toString(),
+      `RedisRequest("SORT", , ["hoge", "BY", "fuga"])`
+    );
+
+    assertEquals(
+      RedisRequest.sort({ LIMIT: 10 }, "hoge").toString(),
+      `RedisRequest("SORT", , ["hoge", "LIMIT", "10"])`
+    );
+
+    assertEquals(
+      RedisRequest.sort({ ASC: true }, "hoge").toString(),
+      `RedisRequest("SORT", , ["hoge", "ASC"])`
+    );
+
+    assertEquals(
+      RedisRequest.sort({ DESC: true, ALPHA: true }, "hoge").toString(),
+      `RedisRequest("SORT", , ["hoge", "DESC", "ALPHA"])`
+    );
+
+    assertEquals(
+      RedisRequest.sort({ STORE: "fuga" }, "hoge").toString(),
+      `RedisRequest("SORT", , ["hoge", "STORE", "fuga"])`
+    );
+
+    assertEquals(
+      RedisRequest.sort({ GET: [ "*" ], ALPHA: true }, "hoge").toString(),
+      `RedisRequest("SORT", , ["hoge", "GET", "*", "ALPHA"])`
+    );
+
+    assertEquals(
+      RedisRequest.sort({ LIMIT: 10, GET: [ "*", "#" ], ALPHA: true }, "hoge").toString(),
+      `RedisRequest("SORT", , ["hoge", "LIMIT", "10", "GET", "*", "GET", "#", "ALPHA"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.touch",
+  () => {
+    assertEquals(
+      RedisRequest.touch("hoge").toString(),
+      `RedisRequest("TOUCH", , ["hoge"])`
+    );
+
+    assertEquals(
+      RedisRequest.touch([ "hoge", "fuga" ]).toString(),
+      `RedisRequest("TOUCH", , ["hoge", "fuga"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.ttl",
+  () => {
+    assertEquals(
+      RedisRequest.ttl("hoge").toString(),
+      `RedisRequest("TTL", , ["hoge"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.type",
+  () => {
+    assertEquals(
+      RedisRequest.type("hoge").toString(),
+      `RedisRequest("TYPE", , ["hoge"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.unlink",
+  () => {
+    assertEquals(
+      RedisRequest.unlink("hoge").toString(),
+      `RedisRequest("UNLINK", , ["hoge"])`
+    );
+
+    assertEquals(
+      RedisRequest.unlink([ "hoge", "fuga" ]).toString(),
+      `RedisRequest("UNLINK", , ["hoge", "fuga"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.hdel",
+  () => {
+    assertEquals(
+      RedisRequest.hdel("hoge", "piyo").toString(),
+      `RedisRequest("HDEL", , ["hoge", "piyo"])`
+    );
+
+    assertEquals(
+      RedisRequest.hdel("hoge", [ "piyo", "fuga" ]).toString(),
+      `RedisRequest("HDEL", , ["hoge", "piyo", "fuga"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.hexists",
+  () => {
+    assertEquals(
+      RedisRequest.hexists("hoge", "piyo").toString(),
+      `RedisRequest("HEXISTS", , ["hoge", "piyo"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.hget",
+  () => {
+    assertEquals(
+      RedisRequest.hget("hoge", "piyo").toString(),
+      `RedisRequest("HGET", , ["hoge", "piyo"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.hgetall",
+  () => {
+    assertEquals(
+      RedisRequest.hgetall("hoge").toString(),
+      `RedisRequest("HGETALL", , ["hoge"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.hincrby",
+  () => {
+    assertEquals(
+      RedisRequest.hincrby("hoge", 3, "piyo").toString(),
+      `RedisRequest("HINCRBY", , ["hoge", "piyo", "3"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.hincrbyfloat",
+  () => {
+    assertEquals(
+      RedisRequest.hincrbyfloat("hoge", 0.1, "piyo").toString(),
+      `RedisRequest("HINCRBYFLOAT", , ["hoge", "piyo", "0.1"])`
+    );
+
+    assertEquals(
+      RedisRequest.hincrbyfloat("hoge", -5, "piyo").toString(),
+      `RedisRequest("HINCRBYFLOAT", , ["hoge", "piyo", "-5"])`
+    );
+
+    assertEquals(
+      RedisRequest.hincrbyfloat("hoge", 5.0e3, "piyo").toString(),
+      `RedisRequest("HINCRBYFLOAT", , ["hoge", "piyo", "5000"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.hkeys",
+  () => {
+    assertEquals(
+      RedisRequest.hkeys("hoge").toString(),
+      `RedisRequest("HKEYS", , ["hoge"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.hlen",
+  () => {
+    assertEquals(
+      RedisRequest.hlen("hoge").toString(),
+      `RedisRequest("HLEN", , ["hoge"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.hmget",
+  () => {
+    assertEquals(
+      RedisRequest.hmget("hoge", "piyo").toString(),
+      `RedisRequest("HMGET", , ["hoge", "piyo"])`
+    );
+
+    assertEquals(
+      RedisRequest.hmget("hoge", [ "piyo", "fuga" ]).toString(),
+      `RedisRequest("HMGET", , ["hoge", "piyo", "fuga"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.hmset",
+  () => {
+    assertEquals(
+      RedisRequest.hmset("hoge", "piyo", "fuga").toString(),
+      `RedisRequest("HMSET", , ["hoge", "piyo", "fuga"])`
+    );
+
+    assertEquals(
+      RedisRequest.hmset("hoge", "piyo", encodeText("fuga")).toString(),
+      `RedisRequest("HMSET", ${encodeText("fuga")}, ["hoge", "piyo", Symbol(RawPlaceholder)])`
+    );
+
+    assertEquals(
+      RedisRequest.hmset(
+        "hoge",
+        [ "piyo", $$rawPlaceholder, "fuga", $$rawPlaceholder ],
+        encodeText("hogepiyo\r\nhogefuga\r\n")
+      ).toString(),
+      `RedisRequest("HMSET", ${encodeText("hogepiyo\r\nhogefuga\r\n")}, ["hoge", "piyo", Symbol(RawPlaceholder), "fuga", Symbol(RawPlaceholder)])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.hscan",
+  () => {
+    assertEquals(
+      RedisRequest.hscan({}, "hoge", 0).toString(),
+      `RedisRequest("HSCAN", , ["hoge", "0"])`
+    );
+
+    assertEquals(
+      RedisRequest.hscan({ MATCH: "*yo", COUNT: 1000 }, "hoge", 0).toString(),
+      `RedisRequest("HSCAN", , ["hoge", "0", "MATCH", "*yo", "COUNT", "1000"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.hset",
+  () => {
+    assertEquals(
+      RedisRequest.hset("hoge", "piyo", "fuga").toString(),
+      `RedisRequest("HSET", , ["hoge", "piyo", "fuga"])`
+    );
+
+    assertEquals(
+      RedisRequest.hset("hoge", "piyo", encodeText("fuga")).toString(),
+      `RedisRequest("HSET", ${encodeText("fuga")}, ["hoge", "piyo", Symbol(RawPlaceholder)])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.hsetnx",
+  () => {
+    assertEquals(
+      RedisRequest.hsetnx("hoge", "piyo", "fuga").toString(),
+      `RedisRequest("HSETNX", , ["hoge", "piyo", "fuga"])`
+    );
+
+    assertEquals(
+      RedisRequest.hsetnx("hoge", "piyo", encodeText("fuga")).toString(),
+      `RedisRequest("HSETNX", ${encodeText("fuga")}, ["hoge", "piyo", Symbol(RawPlaceholder)])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.hstrlen",
+  () => {
+    assertEquals(
+      RedisRequest.hstrlen("hoge", "piyo").toString(),
+      `RedisRequest("HSTRLEN", , ["hoge", "piyo"])`
+    );
+  }
+);
+
+Deno.test(
+  "RedisRequest.hvals",
+  () => {
+    assertEquals(
+      RedisRequest.hvals("hoge").toString(),
+      `RedisRequest("HVALS", , ["hoge"])`
     );
   }
 );
