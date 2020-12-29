@@ -7,11 +7,11 @@ This example uses the Ramda library - for simplification - but you should be abl
 import { safeExtract } from "https://deno.land/x/functional@v1.3.2/library/utilities.js";
 import File from "https://deno.land/x/functional_io@v1.1.0/library/File.js";
 import { writeFile } from "https://deno.land/x/functional_io@v1.1.0/library/fs.js";
-import RedisRequest from "https://deno.land/x/functional_redis@v0.2.0/library/RedisRequest.js";
+import RedisRequest from "https://deno.land/x/functional_redis@v0.3.0/library/RedisRequest.js";
 import {
   createRedisSession,
   pipeRedisCommand
-} from "https://deno.land/x/functional_redis@v0.2.0/library/client.js";
+} from "https://deno.land/x/functional_redis@v0.3.0/library/client.js";
 
 const copyHogeToFuga = createRedisSession(
   compose(
