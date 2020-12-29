@@ -297,7 +297,7 @@ export const parseRedisResponse = compose(
  * [`Task`](https://github.com/sebastienfilion/functional#task-type) of a `Resource`.
  *
  * ```js
- * import { connectRedisClient } from "https://deno.land/x/functional_redis@v0.2.0/library/client.js";
+ * import { connectRedisClient } from "https://deno.land/x/functional_redis@v0.3.0/library/client.js";
  * 
  * const container = await connectRedisClient({ port: 6379 }).run();
  * const redisResource = safeExtract("Failed to connect the client.", container);
@@ -316,7 +316,7 @@ export const connectRedisClient = compose(
  * [`Task`](https://github.com/sebastienfilion/functional#task-type) of a `Resource`.
  *
  * ```js
- * import { disconnectRedisClient } from "https://deno.land/x/functional_redis@v0.2.0/library/client.js";
+ * import { disconnectRedisClient } from "https://deno.land/x/functional_redis@v0.3.0/library/client.js";
  *
  * await disconnectRedisClient(redisResource).run();
  * ```
@@ -491,9 +491,9 @@ export const writeRedisPipeline = curry(
  *
  * ```js
  * import { safeExtract } from "https://deno.land/x/functional@v1.3.2/library/utilities.js";
- * import { executeRedisCommand } from "https://deno.land/x/functional_redis@v0.2.0/library/client.js";
- * import RedisRequest from "https://deno.land/x/functional_redis@v0.2.0/library/RedisRequest.js";
- * import RedisResponse from "https://deno.land/x/functional_redis@v0.2.0/library/RedisResponse.js";
+ * import { executeRedisCommand } from "https://deno.land/x/functional_redis@v0.3.0/library/client.js";
+ * import RedisRequest from "https://deno.land/x/functional_redis@v0.3.0/library/RedisRequest.js";
+ * import RedisResponse from "https://deno.land/x/functional_redis@v0.3.0/library/RedisResponse.js";
  *
  * const container = await executeRedisCommand(
  *   RedisRequest.set({}, "hoge", "piyo"),
@@ -523,9 +523,9 @@ export const executeRedisCommand = curry(
  *
  * ```js
  * import { safeExtract } from "https://deno.land/x/functional@v1.3.2/library/utilities.js";
- * import { executeRedisCommandPipeline } from "https://deno.land/x/functional_redis@v0.2.0/library/client.js";
- * import RedisRequest from "https://deno.land/x/functional_redis@v0.2.0/library/RedisRequest.js";
- * import RedisResponse from "https://deno.land/x/functional_redis@v0.2.0/library/RedisResponse.js";
+ * import { executeRedisCommandPipeline } from "https://deno.land/x/functional_redis@v0.3.0/library/client.js";
+ * import RedisRequest from "https://deno.land/x/functional_redis@v0.3.0/library/RedisRequest.js";
+ * import RedisResponse from "https://deno.land/x/functional_redis@v0.3.0/library/RedisResponse.js";
  *
  * const container = await executeRedisCommandPipeline(
  *   [
@@ -571,8 +571,8 @@ export const executeRedisCommandPipeline = curry(
  * import {
  *   createRedisSession,
  *   executeRedisCommand
- * } from "https://deno.land/x/functional_redis@v0.2.0/library/client.js";
- * import RedisRequest from "https://deno.land/x/functional_redis@v0.2.0/library/RedisRequest.js";
+ * } from "https://deno.land/x/functional_redis@v0.3.0/library/client.js";
+ * import RedisRequest from "https://deno.land/x/functional_redis@v0.3.0/library/RedisRequest.js";
  *
  * const writeHogeToFile = createRedisSession(
  *   compose(
@@ -616,8 +616,8 @@ export const createRedisSession = unaryFunction => compose(
  *
  * ```js
  * import { safeExtract } from "https://deno.land/x/functional@v1.3.2/library/utilities.js";
- * import { executeRedisCommandWithSession } from "https://deno.land/x/functional_redis@v0.2.0/library/client.js";
- * import RedisRequest from "https://deno.land/x/functional_redis@v0.2.0/library/RedisRequest.js";
+ * import { executeRedisCommandWithSession } from "https://deno.land/x/functional_redis@v0.3.0/library/client.js";
+ * import RedisRequest from "https://deno.land/x/functional_redis@v0.3.0/library/RedisRequest.js";
  *
  * const container = await executeRedisCommandWithSession(
  *   { port: 6379 },
@@ -651,8 +651,8 @@ export const executeRedisCommandWithSession = useWith(
  * import {
  *   createRedisSession,
  *   pipeRedisCommand
- * } from "https://deno.land/x/functional_redis@v0.2.0/library/client.js";
- * import RedisRequest from "https://deno.land/x/functional_redis@v0.2.0/library/RedisRequest.js";
+ * } from "https://deno.land/x/functional_redis@v0.3.0/library/client.js";
+ * import RedisRequest from "https://deno.land/x/functional_redis@v0.3.0/library/RedisRequest.js";
  *
  * const copyHogeToFuga = createRedisSession(
  *   compose(
